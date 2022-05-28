@@ -1,0 +1,25 @@
+{
+    "application" : {
+        "base_url":"localhost:8000",
+        "port": ":8000",
+        "secret": "$2a$12$k7aYe7AY670ex9ktx3YFAepBlgoNSpl2NaCZZUBCFTS3y8GEpwVT.",
+        "mode": "development"      
+    },
+
+    "smtp" : {
+        "host" : "smtp.gmail.com",
+        "port" : 587,
+        "sender" : "Renmo <nadzarmutaqin4@gmail.com>",
+        "username" : "nadzarmutaqin4@gmail.com",
+        "password" : "kingmesix666"
+    },
+
+    "database": {
+        "mongo_uri": "mongodb://localhost:27017",
+        "database_name": "lalokal",
+        "session_storage": "session",
+        "max_pool": 5,
+        "min_pool": 10,
+        "max_idle_connection": 1
+    }
+}
