@@ -9,7 +9,7 @@
     "smtp" : {
         "host" : "smtp.gmail.com",
         "port" : 587,
-        "sender" : "Renmo <nadzarmutaqin4@gmail.com>",
+        "sender" : "Lalokal Marketing Tools <nadzarmutaqin4@gmail.com>",
         "username" : "nadzarmutaqin4@gmail.com",
         "password" : "kingmesix666"
     },

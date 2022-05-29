@@ -3,7 +3,7 @@ package user
 import "lalokal/domain/http_response"
 
 type Repository interface {
-	Create(data *RegisterData) (failure error)
+	Insert(data *RegisterData) (failure error)
 
 	UpdatePassword(data *ResetPasswordData) (failure error)
 

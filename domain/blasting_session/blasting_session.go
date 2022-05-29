@@ -6,6 +6,7 @@ type BlastingSession struct {
 	Id      string `json:"id,omitempty" form:"id" bson:"_id"`
 	Title   string `json:"title,omitempty" form:"title" bson:"title"`
 	Message string `json:"message,omitempty" form:"message" bson:"message"`
+	Status  string `json:"status,omitempty" form:"status" bson:"status"`
 	TopicId string `json:"topic_id,omitempty" form:"topic_id" bson:"topic_id"`
 }
 
@@ -27,4 +28,8 @@ type Service interface {
 	ReadAll(topic_id string) (response *http_response.Response)
 
 	Detail(blasting_session_id string) (response *http_response.Response)
+
+	Scrape(user_id string) (response *http_response.Response)
+
+	Blast(user_id string, blasting_session_id string) (response *http_response.Response)
 }
