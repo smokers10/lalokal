@@ -14,7 +14,7 @@ type TwitterAPIToken struct {
 type Repository interface {
 	Upsert(data *TwitterAPIToken) (failure error)
 
-	FindOneById(topic_id string) (result *TwitterAPIToken)
+	FindOneByTopicId(topic_id string) (result *TwitterAPIToken)
 }
 
 type Service interface {

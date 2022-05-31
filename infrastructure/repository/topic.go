@@ -1,4 +1,4 @@
-package domain
+package repository
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func TopicRepository(db *mongo.Database) topic.Repository {
 	}
 }
 
-func (r *topicRepository) Insert(data *topic.Topic) (failure error) {
+func (r *topicRepository) Insert(data *topic.Topic) (inserted_id string, failure error) {
 	defer r.cancel()
 
 	user_id, _ := primitive.ObjectIDFromHex(data.UserId)
@@ -35,11 +35,12 @@ func (r *topicRepository) Insert(data *topic.Topic) (failure error) {
 		"user_id":     user_id,
 	}
 
-	if _, err := r.collection.InsertOne(r.ctx, document); err != nil {
-		return err
+	inserted, err := r.collection.InsertOne(r.ctx, document)
+	if err != nil {
+		return "", err
 	}
 
-	return nil
+	return inserted.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (r *topicRepository) Update(data *topic.Topic) (failure error) {

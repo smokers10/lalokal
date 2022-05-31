@@ -1,4 +1,4 @@
-package domain
+package repository
 
 import (
 	"context"
@@ -44,7 +44,7 @@ func (r *twitterAPITokenRepository) Upsert(data *twitter_api_token.TwitterAPITok
 	return nil
 }
 
-func (r *twitterAPITokenRepository) FindOneById(topic_id string) (result *twitter_api_token.TwitterAPIToken) {
+func (r *twitterAPITokenRepository) FindOneByTopicId(topic_id string) (result *twitter_api_token.TwitterAPIToken) {
 	defer r.cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(topic_id)

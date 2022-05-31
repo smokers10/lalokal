@@ -10,7 +10,7 @@ type Topic struct {
 }
 
 type Repository interface {
-	Insert(data *Topic) (failure error)
+	Insert(data *Topic) (inserted_id string, failure error)
 
 	Update(data *Topic) (failure error)
 

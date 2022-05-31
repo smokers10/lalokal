@@ -1,4 +1,4 @@
-package domain
+package repository
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func UserRepository(db *mongo.Database) user.Repository {
 	}
 }
 
-func (r *userRepository) Insert(data *user.RegisterData) (failure error) {
+func (r *userRepository) Insert(data *user.RegisterData) (inserted_id string, failure error) {
 	defer r.cancel()
 
 	document := bson.M{
@@ -35,11 +35,12 @@ func (r *userRepository) Insert(data *user.RegisterData) (failure error) {
 		"password":     data.Password,
 	}
 
-	if _, err := r.collection.InsertOne(r.ctx, document); err != nil {
-		return err
+	inserted, err := r.collection.InsertOne(r.ctx, document)
+	if err != nil {
+		return "", err
 	}
 
-	return nil
+	return inserted.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (r *userRepository) UpdatePassword(data *user.ResetPasswordData) (failure error) {

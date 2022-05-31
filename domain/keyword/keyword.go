@@ -9,7 +9,7 @@ type Keyword struct {
 }
 
 type Repository interface {
-	Insert(data *Keyword) (failure error)
+	Insert(data *Keyword) (inserted_id string, failure error)
 
 	Delete(keyword_id string) (failure error)
 

@@ -1,4 +1,4 @@
-package domain
+package repository
 
 import (
 	"context"
@@ -54,4 +54,14 @@ func (r *verificationRepository) UpdateStatus(verification_id string) (failure e
 	}
 
 	return nil
+}
+
+func (r *verificationRepository) FindOneByEmail(email string) (result *verification.Verification) {
+	defer r.cancel()
+
+	if err := r.collection.FindOne(r.ctx, bson.M{"email": email}).Decode(&result); err != nil {
+		return &verification.Verification{}
+	}
+
+	return result
 }

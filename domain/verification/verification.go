@@ -11,4 +11,6 @@ type Repository interface {
 	Upsert(data *Verification) (failure error)
 
 	UpdateStatus(verification_id string) (failure error)
+
+	FindOneByEmail(email string) (result *Verification)
 }

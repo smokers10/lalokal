@@ -6,9 +6,9 @@ type MockRepository struct {
 	Mock mock.Mock
 }
 
-func (m *MockRepository) Create(data *RegisterData) (failure error) {
+func (m *MockRepository) Insert(data *RegisterData) (inserted_id string, failure error) {
 	args := m.Mock.Called(data)
-	return args.Error(0)
+	return args.String(0), args.Error(1)
 }
 
 func (m *MockRepository) UpdatePassword(data *ResetPasswordData) (failure error) {

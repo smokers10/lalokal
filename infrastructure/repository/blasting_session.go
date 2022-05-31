@@ -1,4 +1,4 @@
-package domain
+package repository
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func BlastingSessionRepository(db *mongo.Database) blasting_session.Repository {
 	}
 }
 
-func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSession) (failure error) {
+func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSession) (inserted_id string, failure error) {
 	defer r.cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
@@ -36,24 +36,22 @@ func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSessio
 		"topic_id": topicId,
 	}
 
-	if _, err := r.collection.InsertOne(r.ctx, document); err != nil {
-		return err
+	result, err := r.collection.InsertOne(r.ctx, document)
+	if err != nil {
+		return "", err
 	}
 
-	return nil
+	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (r *blastingSessionRepository) Update(data *blasting_session.BlastingSession) (failure error) {
 	defer r.cancel()
 
-	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
 	_id, _ := primitive.ObjectIDFromHex(data.Id)
 	document := bson.M{
 		"$set": bson.M{
-			"title":    data.Title,
-			"message":  data.Message,
-			"status":   data.Status,
-			"topic_id": topicId,
+			"title":   data.Title,
+			"message": data.Message,
 		},
 	}
 
@@ -91,4 +89,21 @@ func (r *blastingSessionRepository) FindById(blasting_session_id string) (result
 	}
 
 	return result
+}
+
+func (r *blastingSessionRepository) UpdateStatus(blasting_session_id string, status string) (failure error) {
+	defer r.cancel()
+
+	_id, _ := primitive.ObjectIDFromHex(blasting_session_id)
+	document := bson.M{
+		"$set": bson.M{
+			"status": status,
+		},
+	}
+
+	if err := r.collection.FindOneAndUpdate(r.ctx, bson.M{"_id": _id}, document).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }

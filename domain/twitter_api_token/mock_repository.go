@@ -11,7 +11,7 @@ func (m *MockRepository) Upsert(data *TwitterAPIToken) (failure error) {
 	return args.Error(0)
 }
 
-func (m *MockRepository) FindOneById(topic_id string) (result *TwitterAPIToken) {
+func (m *MockRepository) FindOneByTopicId(topic_id string) (result *TwitterAPIToken) {
 	args := m.Mock.Called(topic_id)
 	return args.Get(0).(*TwitterAPIToken)
 }

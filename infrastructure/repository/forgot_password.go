@@ -1,4 +1,4 @@
-package domain
+package repository
 
 import (
 	"context"
@@ -30,12 +30,14 @@ func (r *forgotPasswordRepository) Insert(data *forgot_password.ForgotPassword) 
 
 	user_id, _ := primitive.ObjectIDFromHex(data.UserId)
 	document := bson.M{
-		"token":   data.Token,
-		"user_id": user_id,
-		"secret":  data.Secret,
+		"$set": bson.M{
+			"token":   data.Token,
+			"user_id": user_id,
+			"secret":  data.Secret,
+		},
 	}
 
-	if _, err := r.collection.InsertOne(r.ctx, document); err != nil {
+	if _, err := r.collection.UpdateOne(r.ctx, bson.M{"user_id": user_id}, document); err != nil {
 		return err
 	}
 

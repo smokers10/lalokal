@@ -11,13 +11,15 @@ type BlastingSession struct {
 }
 
 type Repository interface {
-	Insert(data *BlastingSession) (failure error)
+	Insert(data *BlastingSession) (inserted_id string, failure error)
 
 	Update(data *BlastingSession) (failure error)
 
 	FindByTopicId(topic_id string) (result []BlastingSession)
 
 	FindById(blasting_session_id string) (result *BlastingSession)
+
+	UpdateStatus(blasting_session_id string, status string) (failure error)
 }
 
 type Service interface {
@@ -29,7 +31,7 @@ type Service interface {
 
 	Detail(blasting_session_id string) (response *http_response.Response)
 
-	Scrape(user_id string) (response *http_response.Response)
+	Scrape(blasting_session_id string) (response *http_response.Response)
 
-	Blast(user_id string, blasting_session_id string) (response *http_response.Response)
+	Blast(blasting_session_id string) (response *http_response.Response)
 }

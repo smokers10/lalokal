@@ -6,9 +6,9 @@ type MockRepository struct {
 	Mock mock.Mock
 }
 
-func (m *MockRepository) Insert(data *BlastingSession) (failure error) {
+func (m *MockRepository) Insert(data *BlastingSession) (inserted_id string, failure error) {
 	args := m.Mock.Called(data)
-	return args.Error(0)
+	return args.String(0), args.Error(1)
 }
 
 func (m *MockRepository) Update(data *BlastingSession) (failure error) {
@@ -24,4 +24,9 @@ func (m *MockRepository) FindByTopicId(topic_id string) (result []BlastingSessio
 func (m *MockRepository) FindById(blasting_session_id string) (result *BlastingSession) {
 	args := m.Mock.Called(blasting_session_id)
 	return args.Get(0).(*BlastingSession)
+}
+
+func (m *MockRepository) UpdateStatus(blasting_session_id string, status string) (failure error) {
+	args := m.Mock.Called(blasting_session_id, status)
+	return args.Error(0)
 }

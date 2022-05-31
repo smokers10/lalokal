@@ -1,9 +1,12 @@
 package user
 
-import "lalokal/domain/http_response"
+import (
+	"lalokal/domain/http_response"
+	"lalokal/domain/verification"
+)
 
 type Repository interface {
-	Insert(data *RegisterData) (failure error)
+	Insert(data *RegisterData) (inserted_id string, failure error)
 
 	UpdatePassword(data *ResetPasswordData) (failure error)
 
@@ -26,4 +29,8 @@ type Service interface {
 	GetProfile(user_id string) (response *http_response.Response)
 
 	UpdateProfile(input *User) (response *http_response.Response)
+
+	VerificationRequest(email string) (response *http_response.Response)
+
+	VerificateEmail(input *verification.Verification) (response *http_response.Response)
 }
