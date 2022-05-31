@@ -60,7 +60,7 @@ func registerValidation(i *user.RegisterData) (message string, isfail bool) {
 		return "konfirmasi password tidak boleh kosong", true
 	}
 
-	if len(i.Password) < 8 || len(i.CofirmPassword) < 0 {
+	if len(i.Password) < 8 || len(i.CofirmPassword) < 8 {
 		return "panjang password harus lebih dari 8 karakter", true
 	}
 
@@ -80,7 +80,7 @@ func resetPasswordValidation(i *user.ResetPasswordData) (message string, isfail 
 		return "konfirmasi password tidak boleh kosong", true
 	}
 
-	if len(i.Password) < 8 || len(i.CofirmPassword) < 0 {
+	if len(i.Password) < 8 || len(i.CofirmPassword) < 8 {
 		return "panjang password harus lebih dari 8 karakter", true
 	}
 
