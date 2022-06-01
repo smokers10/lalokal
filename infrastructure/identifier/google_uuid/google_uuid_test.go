@@ -1,4 +1,4 @@
-package implementation
+package google_uuid
 
 import (
 	"testing"

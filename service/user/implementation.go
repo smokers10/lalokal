@@ -7,11 +7,11 @@ import (
 	"lalokal/domain/user"
 	"lalokal/domain/verification"
 	"lalokal/infrastructure/configuration"
-	"lalokal/infrastructure/dependency/encryption"
-	"lalokal/infrastructure/dependency/identifier"
-	"lalokal/infrastructure/dependency/jsonwebtoken"
+	"lalokal/infrastructure/encryption"
+	"lalokal/infrastructure/identifier"
+	"lalokal/infrastructure/jsonwebtoken"
 	"lalokal/infrastructure/lib"
-	"lalokal/infrastructure/lib/smtp"
+	"lalokal/infrastructure/mailer"
 	"lalokal/service/user/helper"
 )
 
@@ -22,7 +22,20 @@ type userService struct {
 	bcrypt                   encryption.Contract
 	jsonwebtoken             jsonwebtoken.Contact
 	identifier               identifier.Contract
-	smtp                     smtp.Contract
+	smtp                     mailer.Contract
+}
+
+func UserService(ur *user.Repository, fp *forgot_password.Repository, vr *verification.Repository,
+	en *encryption.Contract, jwt *jsonwebtoken.Contact, id *identifier.Contract, smtp *mailer.Contract) user.Service {
+	return &userService{
+		userRepository:           *ur,
+		forgotPasswordRepository: *fp,
+		verificationRepository:   *vr,
+		bcrypt:                   *en,
+		jsonwebtoken:             *jwt,
+		identifier:               *id,
+		smtp:                     *smtp,
+	}
 }
 
 // ForgotPassword implements user.Service
@@ -217,7 +230,48 @@ func (s *userService) ResetPassword(input *user.ResetPasswordData) (response *ht
 		return &http_response.Response{Message: msg, Status: 400}
 	}
 
-	panic("unimplemented")
+	// retrieve forgot password
+	forgotPW := s.forgotPasswordRepository.FindOneByToken(input.Token)
+
+	// is forgot password not found
+	if forgotPW.Id == "" {
+		return &http_response.Response{
+			Message: "sesi forgot password tidak ada",
+			Status:  404,
+		}
+	}
+
+	// compare secret code
+	if !s.bcrypt.Compare(input.Secret, forgotPW.Secret) {
+		return &http_response.Response{
+			Message: "kode reset password salah",
+			Status:  401,
+		}
+	}
+
+	// update password
+	input.Password = s.bcrypt.Hash(input.Password)
+
+	if err := s.userRepository.UpdatePassword(input); err != nil {
+		return &http_response.Response{
+			Message: "kesalahan saat mengatur ulang",
+			Status:  500,
+		}
+	}
+
+	// hapus forgot password
+	if err := s.forgotPasswordRepository.Delete(forgotPW.Token); err != nil {
+		return &http_response.Response{
+			Message: "kesalhan saat menghapus sesi reset password",
+			Status:  500,
+		}
+	}
+
+	return &http_response.Response{
+		Message: "password berhasil diatur ulang",
+		Success: true,
+		Status:  200,
+	}
 }
 
 // UpdateProfile implements user.Service
@@ -226,7 +280,19 @@ func (s *userService) UpdateProfile(input *user.User) (response *http_response.R
 		return &http_response.Response{Message: msg, Status: 400}
 	}
 
-	panic("unimplemented")
+	if err := s.userRepository.Update(input); err != nil {
+		return &http_response.Response{
+			Message: "kesalahan saat update profile",
+			Status:  500,
+		}
+	}
+
+	return &http_response.Response{
+		Message: "profile berhasil diupdate",
+		Success: true,
+		Status:  200,
+		Data:    input,
+	}
 }
 
 // VerificateEmail implements user.Service
@@ -235,7 +301,46 @@ func (s *userService) VerificateEmail(input *verification.Verification) (respons
 		return &http_response.Response{Message: msg, Status: 400}
 	}
 
-	panic("unimplemented")
+	// retrieve verification
+	verification := s.verificationRepository.FindOneByEmail(input.RequesterEmail)
+
+	// when verification request never made
+	if verification.Id == "" {
+		return &http_response.Response{
+			Message: "sesi verifikasi tidak ada",
+			Status:  404,
+		}
+	}
+
+	// if already verificated
+	if verification.Status == "verified" {
+		return &http_response.Response{
+			Message: "email sudah terverifikasi",
+			Status:  409,
+		}
+	}
+
+	// compare OTP
+	if !s.bcrypt.Compare(verification.Secret, input.Secret) {
+		return &http_response.Response{
+			Message: "kode verifikasi salah",
+			Status:  401,
+		}
+	}
+
+	// update verification status
+	if err := s.verificationRepository.UpdateStatus(verification.Id); err != nil {
+		return &http_response.Response{
+			Message: "kesalahan saat update status verifikasi",
+			Status:  500,
+		}
+	}
+
+	return &http_response.Response{
+		Message: "email terverifikasi",
+		Success: true,
+		Status:  200,
+	}
 }
 
 // VerificationRequest implements user.Service
@@ -244,18 +349,49 @@ func (s *userService) VerificationRequest(email string) (response *http_response
 		return &http_response.Response{Message: msg, Status: 400}
 	}
 
-	panic("unimplemented")
-}
+	// retrieve verification
+	verification_data := s.verificationRepository.FindOneByEmail(email)
 
-func UserService(ur *user.Repository, fp *forgot_password.Repository, vr *verification.Repository,
-	en *encryption.Contract, jwt *jsonwebtoken.Contact, id *identifier.Contract, smtp *smtp.Contract) user.Service {
-	return &userService{
-		userRepository:           *ur,
-		forgotPasswordRepository: *fp,
-		verificationRepository:   *vr,
-		bcrypt:                   *en,
-		jsonwebtoken:             *jwt,
-		identifier:               *id,
-		smtp:                     *smtp,
+	// verification data not found
+	if verification_data.Id == "" {
+		return &http_response.Response{
+			Message: "sesi verifikasi tidak ada",
+			Status:  404,
+		}
+	}
+
+	// if already verificated
+	if verification_data.Status == "verified" {
+		return &http_response.Response{
+			Message: "email sudah terverifikasi",
+			Status:  409,
+		}
+	}
+
+	// setup new verification data
+	otp := lib.OTPGenerator()
+	securedOTP := s.bcrypt.Hash(otp)
+	if err := s.verificationRepository.Upsert(&verification.Verification{
+		RequesterEmail: email,
+		Secret:         securedOTP,
+	}); err != nil {
+		return &http_response.Response{
+			Message: "kesalahan saat menyimpan sesi verifikasi",
+			Status:  500,
+		}
+	}
+
+	// send otp to email
+	if err := s.smtp.Send([]string{email}, "verifikasi email", helper.VerificationEmailTemplate(otp)); err != nil {
+		return &http_response.Response{
+			Message: "kesalahan saat mengirim email",
+			Status:  500,
+		}
+	}
+
+	return &http_response.Response{
+		Message: "verifikasi email berhasil",
+		Success: true,
+		Status:  200,
 	}
 }

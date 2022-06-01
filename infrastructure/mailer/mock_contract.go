@@ -1,4 +1,4 @@
-package smtp
+package mailer
 
 import "github.com/stretchr/testify/mock"
 

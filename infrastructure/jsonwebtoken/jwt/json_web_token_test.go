@@ -1,4 +1,4 @@
-package implementation
+package jwt
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package implementation
+package bcrypt
 
 import (
 	"testing"

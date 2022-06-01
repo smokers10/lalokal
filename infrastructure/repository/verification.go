@@ -31,7 +31,7 @@ func (r *verificationRepository) Upsert(data *verification.Verification) (failur
 
 	document := bson.M{
 		"$set": bson.M{
-			"status": false,
+			"status": "not verified",
 			"secret": data.Secret,
 		},
 	}
@@ -47,7 +47,7 @@ func (r *verificationRepository) UpdateStatus(verification_id string) (failure e
 	defer r.cancel()
 
 	_id, _ := primitive.ObjectIDFromHex(verification_id)
-	document := bson.M{"status": true}
+	document := bson.M{"status": "verified"}
 
 	if err := r.collection.FindOneAndUpdate(r.ctx, bson.M{"_id": _id}, document).Err(); err != nil {
 		return err

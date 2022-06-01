@@ -1,7 +1,7 @@
-package implementation
+package bcrypt
 
 import (
-	"lalokal/infrastructure/dependency/encryption"
+	"lalokal/infrastructure/encryption"
 
 	"golang.org/x/crypto/bcrypt"
 )

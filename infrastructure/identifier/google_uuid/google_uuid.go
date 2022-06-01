@@ -1,7 +1,7 @@
-package implementation
+package google_uuid
 
 import (
-	"lalokal/infrastructure/dependency/identifier"
+	"lalokal/infrastructure/identifier"
 
 	"github.com/google/uuid"
 )

@@ -1,15 +1,36 @@
 package main
 
 import (
-	"lalokal/infrastructure/database"
-	"lalokal/infrastructure/lib"
+	"lalokal/infrastructure/configuration"
+	"lalokal/infrastructure/injector"
+	"lalokal/infrastructure/routes"
+	"log"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/template/html"
 )
 
 func main() {
-	db, err := database.MongoInit().MongoDB()
-	if err != nil {
-		panic(err)
-	}
+	// app configuration
+	application_configuration := configuration.ReadConfiguration().Application
 
-	lib.CollectionBuilder(db)
+	//set view engine
+	engine := html.New("./infrastructure/views", ".html")
+
+	app := fiber.New(fiber.Config{
+		Views: engine,
+		// ViewsLayout: "layouts/main",
+		// Prefork: true,
+	})
+
+	app.Use(recover.New())
+
+	// invoke injection
+	injector := injector.Injector()
+
+	// router
+	routes.Router(app, injector)
+
+	log.Fatal(app.Listen(application_configuration.Port))
 }

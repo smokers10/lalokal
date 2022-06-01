@@ -1,10 +1,10 @@
-package implementation
+package jwt
 
 import (
 	"encoding/json"
 	"fmt"
 	"lalokal/infrastructure/configuration"
-	"lalokal/infrastructure/dependency/jsonwebtoken"
+	"lalokal/infrastructure/jsonwebtoken"
 
 	"github.com/golang-jwt/jwt"
 )
