@@ -324,7 +324,7 @@ func (s *userService) VerificateEmail(input *verification.Verification) (respons
 	if !s.bcrypt.Compare(verification.Secret, input.Secret) {
 		return &http_response.Response{
 			Message: "kode verifikasi salah",
-			Status:  401,
+			Status:  200,
 		}
 	}
 
@@ -351,14 +351,6 @@ func (s *userService) VerificationRequest(email string) (response *http_response
 
 	// retrieve verification
 	verification_data := s.verificationRepository.FindOneByEmail(email)
-
-	// verification data not found
-	if verification_data.Id == "" {
-		return &http_response.Response{
-			Message: "sesi verifikasi tidak ada",
-			Status:  404,
-		}
-	}
 
 	// if already verificated
 	if verification_data.Status == "verified" {
@@ -390,6 +382,7 @@ func (s *userService) VerificationRequest(email string) (response *http_response
 	}
 
 	return &http_response.Response{
+		Data:    map[string]interface{}{"email": email},
 		Message: "verifikasi email berhasil",
 		Success: true,
 		Status:  200,

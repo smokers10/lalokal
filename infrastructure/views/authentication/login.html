@@ -1,12 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
+    <link rel="stylesheet" href="/boostrap/css/bootstrap.min.css">
+    <style>
+        body,
+        html {
+            height: 100%;
+        }
+    </style>
 </head>
+
 <body>
-    <center><h1>login</h1></center>
+    {{ template "parts/guest-navbar" }}
+
+    <div class="container d-flex h-100">
+        <div class="row align-self-center w-100">
+            <div class="col-6 mx-auto">
+                <div class="shadow p-3 mb-5 bg-body rounded">
+                    <h1>Login</h1>
+                    <p>Silahkan masukan email dan password</p>
+                    <form action="#">
+                        <div class="mb-3">
+                            <input type="email" class="form-control" id="email" placeholder="Masukan email">
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="password" placeholder="Masukan password">
+                        </div>
+                        <div class="mb-3 d-grid gap-2">
+                            <button class="btn btn-primary btn-block" type="submit">
+                                Login
+                            </button>
+                        </div>
+                    </form>
+                    <p><a href="/register">Buat akun baru</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/boostrap/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"lalokal/domain/topic"
 	"lalokal/infrastructure/lib"
 
@@ -12,21 +11,17 @@ import (
 
 type topicRepository struct {
 	collection mongo.Collection
-	ctx        context.Context
-	cancel     context.CancelFunc
 }
 
 func TopicRepository(db *mongo.Database) topic.Repository {
-	ctx, cancel := lib.InitializeContex()
 	return &topicRepository{
 		collection: *db.Collection("topic"),
-		ctx:        ctx,
-		cancel:     cancel,
 	}
 }
 
 func (r *topicRepository) Insert(data *topic.Topic) (inserted_id string, failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	user_id, _ := primitive.ObjectIDFromHex(data.UserId)
 	document := bson.M{
@@ -35,7 +30,7 @@ func (r *topicRepository) Insert(data *topic.Topic) (inserted_id string, failure
 		"user_id":     user_id,
 	}
 
-	inserted, err := r.collection.InsertOne(r.ctx, document)
+	inserted, err := r.collection.InsertOne(ctx, document)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +39,8 @@ func (r *topicRepository) Insert(data *topic.Topic) (inserted_id string, failure
 }
 
 func (r *topicRepository) Update(data *topic.Topic) (failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	_id, _ := primitive.ObjectIDFromHex(data.Id)
 	document := bson.M{
@@ -52,7 +48,7 @@ func (r *topicRepository) Update(data *topic.Topic) (failure error) {
 		"description": data.Description,
 	}
 
-	if err := r.collection.FindOneAndUpdate(r.ctx, bson.M{"_id": _id}, document).Err(); err != nil {
+	if err := r.collection.FindOneAndUpdate(ctx, bson.M{"_id": _id}, document).Err(); err != nil {
 		return err
 	}
 
@@ -60,16 +56,17 @@ func (r *topicRepository) Update(data *topic.Topic) (failure error) {
 }
 
 func (r *topicRepository) FindByUserId(user_id string) (result []topic.Topic) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	userId, _ := primitive.ObjectIDFromHex(user_id)
 
-	cursor, err := r.collection.Find(r.ctx, bson.M{"user_id": userId})
+	cursor, err := r.collection.Find(ctx, bson.M{"user_id": userId})
 	if err != nil {
 		return []topic.Topic{}
 	}
 
-	if err := cursor.All(r.ctx, result); err != nil {
+	if err := cursor.All(ctx, result); err != nil {
 		return []topic.Topic{}
 	}
 
@@ -77,11 +74,12 @@ func (r *topicRepository) FindByUserId(user_id string) (result []topic.Topic) {
 }
 
 func (r *topicRepository) FindOneById(topic_id string) (result *topic.Topic) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(topic_id)
 
-	if err := r.collection.FindOne(r.ctx, bson.M{"_id": topicId}).Decode(&result); err != nil {
+	if err := r.collection.FindOne(ctx, bson.M{"_id": topicId}).Decode(&result); err != nil {
 		return &topic.Topic{}
 	}
 

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"lalokal/domain/twitter_api_token"
 	"lalokal/infrastructure/lib"
 
@@ -13,21 +12,17 @@ import (
 
 type twitterAPITokenRepository struct {
 	collection mongo.Collection
-	ctx        context.Context
-	cancel     context.CancelFunc
 }
 
 func TwitterAPITokenRepository(db *mongo.Database) twitter_api_token.Repository {
-	ctx, cancel := lib.InitializeContex()
 	return &twitterAPITokenRepository{
 		collection: *db.Collection("twitter_api_token"),
-		ctx:        ctx,
-		cancel:     cancel,
 	}
 }
 
 func (r *twitterAPITokenRepository) Upsert(data *twitter_api_token.TwitterAPIToken) (failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
 	document := bson.M{
@@ -37,7 +32,7 @@ func (r *twitterAPITokenRepository) Upsert(data *twitter_api_token.TwitterAPITok
 		},
 	}
 
-	if _, err := r.collection.UpdateOne(r.ctx, bson.M{"topic_id": topicId}, document, options.Update().SetUpsert(true)); err != nil {
+	if _, err := r.collection.UpdateOne(ctx, bson.M{"topic_id": topicId}, document, options.Update().SetUpsert(true)); err != nil {
 		return err
 	}
 
@@ -45,11 +40,12 @@ func (r *twitterAPITokenRepository) Upsert(data *twitter_api_token.TwitterAPITok
 }
 
 func (r *twitterAPITokenRepository) FindOneByTopicId(topic_id string) (result *twitter_api_token.TwitterAPIToken) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(topic_id)
 
-	if err := r.collection.FindOne(r.ctx, bson.M{"topic_id": topicId}).Decode(&result); err != nil {
+	if err := r.collection.FindOne(ctx, bson.M{"topic_id": topicId}).Decode(&result); err != nil {
 		return &twitter_api_token.TwitterAPIToken{}
 	}
 

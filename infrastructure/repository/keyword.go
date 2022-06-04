@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"lalokal/domain/keyword"
 	"lalokal/infrastructure/lib"
 
@@ -12,21 +11,17 @@ import (
 
 type keywordRepository struct {
 	collection mongo.Collection
-	ctx        context.Context
-	cancel     context.CancelFunc
 }
 
 func KeywordRepository(db *mongo.Database) keyword.Repository {
-	ctx, cancel := lib.InitializeContex()
 	return &keywordRepository{
 		collection: *db.Collection("keyword"),
-		ctx:        ctx,
-		cancel:     cancel,
 	}
 }
 
 func (r *keywordRepository) Insert(data *keyword.Keyword) (inserted_id string, failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
 	document := bson.M{
@@ -34,7 +29,7 @@ func (r *keywordRepository) Insert(data *keyword.Keyword) (inserted_id string, f
 		"topic_id": topicId,
 	}
 
-	inserted, err := r.collection.InsertOne(r.ctx, document)
+	inserted, err := r.collection.InsertOne(ctx, document)
 	if err != nil {
 		return "", err
 	}
@@ -43,11 +38,12 @@ func (r *keywordRepository) Insert(data *keyword.Keyword) (inserted_id string, f
 }
 
 func (r *keywordRepository) Delete(keyword_id string) (failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	keywordId, _ := primitive.ObjectIDFromHex(keyword_id)
 
-	if err := r.collection.FindOneAndDelete(r.ctx, bson.M{"_id": keywordId}).Err(); err != nil {
+	if err := r.collection.FindOneAndDelete(ctx, bson.M{"_id": keywordId}).Err(); err != nil {
 		return err
 	}
 
@@ -55,16 +51,17 @@ func (r *keywordRepository) Delete(keyword_id string) (failure error) {
 }
 
 func (r *keywordRepository) FindByTopicId(topic_id string) (result []keyword.Keyword) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(topic_id)
 
-	cursor, err := r.collection.Find(r.ctx, bson.M{"topic_id": topicId})
+	cursor, err := r.collection.Find(ctx, bson.M{"topic_id": topicId})
 	if err != nil {
 		return []keyword.Keyword{}
 	}
 
-	if err := cursor.All(r.ctx, result); err != nil {
+	if err := cursor.All(ctx, result); err != nil {
 		return []keyword.Keyword{}
 	}
 

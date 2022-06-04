@@ -24,7 +24,12 @@ func main() {
 		// Prefork: true,
 	})
 
-	app.Use(recover.New())
+	// static folder
+	app.Static("/", "./infrastructure/public")
+
+	if application_configuration.Mode == "development" {
+		app.Use(recover.New())
+	}
 
 	// invoke injection
 	injector := injector.Injector()

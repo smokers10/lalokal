@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tahap 3 | Registrasi</title>
+    <link rel="stylesheet" href="/boostrap/css/bootstrap.min.css">
+    <style>
+        body,
+        html {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    {{ template "parts/guest-navbar" }}
+
+    <div class="container d-flex h-100">
+        <div class="row align-self-center w-100">
+            <div class="col-6 mx-auto">
+                <div class="shadow p-3 mb-5 bg-body rounded">
+                    <h1>Tahap 3 - Registrasi</h1>
+                    <p>Silahkan lengkapi formulir dibawah ini</p>
+                    <div id="alert-place"></div>
+                    <form action="/registration/registration-submission" id="registration-form" novalidate>
+                        <div class="mb-3" id="input-name">
+                            <label for="name" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="name" placeholder="Masukan nama lengkap">
+                        </div>
+                        <div class="mb-3" id="input-address">
+                            <label for="address" class="form-label">Alamat</label>
+                            <input type="text" class="form-control" id="address" placeholder="Masukan alamat">
+                        </div>
+                        <div class="mb-3" id="input-company-name">
+                            <label for="company_name" class="form-label">Nama Perusahaan</label>
+                            <input type="text" class="form-control" id="company_name" placeholder="Masukan nama perusahaan">
+                        </div>
+                        <div class="mb-3" id="input-password">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Masukan password">
+                        </div>
+                        <div class="mb-3" id="input-confirm-password">
+                            <label for="confirm_password" class="form-label">Konfirmasi Password</label>
+                            <input type="password" class="form-control" id="confirm_password" placeholder="Masukan konfirmasi password">
+                        </div>
+                        <div class="mb-3 d-grid gap-2">
+                            <button class="btn btn-primary btn-block" type="submit">
+                                Registrasi
+                            </button>
+                        </div>
+                    </form>
+                    <p><a href="/">sudah punya akun</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/boostrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/jquery/jquery.js"></script>
+    <script src="/script/lib/alert.js"></script>
+    <script>
+        $(function(){
+            function validation(data) {
+                const { name, address, company_name, confirm_password, password } = data
+
+                // remove text danger 
+                var el = document.getElementsByClassName("text-danger")
+                for (let i = 0; i < el.length; i++) {
+                    el[i].remove()
+                }
+
+                // append text danger if validation error
+                if (name == "") {
+                    $("#input-name").append(`
+                    <div class="text-danger">
+                        <small>
+                            nama lengkap tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                if (address == "") {
+                    $("#input-address").append(`
+                    <div class="text-danger">
+                        <small>
+                            alamat tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                if (company_name == "") {
+                    $("#input-company-name").append(`
+                    <div class="text-danger">
+                        <small>
+                            alamat tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                if (password == "") {
+                    $("#input-password").append(`
+                    <div class="text-danger">
+                        <small>
+                            password tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                if (confirm_password == "") {
+                    $("#input-confirm-password").append(`
+                    <div class="text-danger">
+                        <small>
+                            konfirmasi password tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                if (password != confirm_password) {
+                    $("#input-confirm-password").append(`
+                    <div class="text-danger">
+                        <small>
+                            konfirmasi password salah
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                return false
+            }
+
+            $("#registration-form").submit(function (e) {
+                e.preventDefault()
+                const form = $(this)
+                const url = form.attr("action")
+                const lstorage = JSON.parse(localStorage.getItem("registration"))
+                const data = {
+                    name: $("#name").val(),
+                    address : $("#address").val(),
+                    email: lstorage.email,
+                    company_name: $("#company_name").val(),
+                    password: $("#password").val(),
+                    confirm_password: $("#confirm_password").val(),
+                }
+
+                const v = validation(data)
+
+                if (!v) {
+                    $.ajax({
+                        url,
+                        method: "post",
+                        data: JSON.stringify(data),
+                        contentType: "application/json",
+                        beforeSend: function () {
+                            setup_alert("", "loading")
+                        },
+                        success: function (res) {
+                            const { message, success, data } = res
+                            setup_alert("registrasi berhasil", "success")
+                        },
+                        error: function (request, status, error) {
+                            errObj = JSON.parse(request.responseText)
+                            setup_alert(errObj.message, "failed")
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>

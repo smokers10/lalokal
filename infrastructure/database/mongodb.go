@@ -1,8 +1,8 @@
 package database
 
 import (
-	"context"
 	"lalokal/infrastructure/configuration"
+	"lalokal/infrastructure/lib"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,14 +13,13 @@ type mongodbImplementation struct {
 	databaseConfiguration configuration.Database
 }
 
-func MongoInit() Contract {
+func MongoInit() *mongodbImplementation {
 	configuraton := configuration.ReadConfiguration()
 	return &mongodbImplementation{databaseConfiguration: configuraton.Database}
 }
 
 func (m *mongodbImplementation) MongoDB() (database *mongo.Database, failure error) {
-	// declaration
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := lib.InitializeContex()
 	defer cancel()
 
 	// set configuration
@@ -30,15 +29,16 @@ func (m *mongodbImplementation) MongoDB() (database *mongo.Database, failure err
 		SetMinPoolSize(uint64(m.databaseConfiguration.MinPool)).
 		SetMaxConnIdleTime(time.Duration(m.databaseConfiguration.MaxIdleConnection))
 
-	// start connection
-	client, err := mongo.Connect(ctx, option)
+	// set up connection
+	client, err := mongo.NewClient(option)
 	if err != nil {
 		return nil, err
 	}
 
-	// set connection database
+	// start connection
+	client.Connect(ctx)
 	db := client.Database(m.databaseConfiguration.DatabaseName)
 
-	// return connection
+	// return database
 	return db, nil
 }

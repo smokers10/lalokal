@@ -8,6 +8,7 @@ import (
 	"lalokal/infrastructure/identifier/google_uuid"
 	"lalokal/infrastructure/jsonwebtoken"
 	"lalokal/infrastructure/jsonwebtoken/jwt"
+	"lalokal/infrastructure/lib"
 	"lalokal/infrastructure/mailer"
 )
 
@@ -25,6 +26,8 @@ func Injector() *InjectorSolvent {
 	if err != nil {
 		panic(err)
 	}
+
+	lib.CollectionBuilder(db)
 
 	// inject database to repository resolvent
 	compund := repoCompound(db)

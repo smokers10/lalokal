@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tahap 2 | Verifikasi Email</title>
+    <link rel="stylesheet" href="/boostrap/css/bootstrap.min.css">
+    <style>
+        body,
+        html {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    {{ template "parts/guest-navbar" }}
+
+    <div class="container d-flex h-100">
+        <div class="row align-self-center w-100">
+            <div class="col-6 mx-auto">
+                <div class="shadow p-3 mb-5 bg-body rounded">
+                    <h1>Tahap 2 - Verifikasi Email</h1>
+                    <p>Silahkan masukan kode verifikasi, periksa inbox atau spam email Anda</p>
+                    <div id="alert-place"></div>
+                    <form action="/registration/verificate-submission" id="verificate-form" class="needs-validation"
+                        novalidate>
+                        <div class="mb-3" id="input-secret">
+                            <label for="secret" class="form-label">Kode Verifikasi</label>
+                            <input type="text" class="form-control" id="secret" placeholder="Masukan Kode Verifikasi"
+                                required>
+                        </div>
+                        <div class="mb-3 d-grid gap-2">
+                            <button class="btn btn-primary btn-block" type="submit">
+                                Verifikasi
+                            </button>
+                        </div>
+                    </form>
+                    <p><a href="/">sudah punya akun</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/boostrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/jquery/jquery.js"></script>
+    <script src="/script/lib/alert.js"></script>
+    <script>
+        $(function () {
+            function validation(data) {
+                const { secret } = data
+
+                // remove text danger 
+                var el = document.getElementsByClassName("text-danger")
+                for (let i = 0; i < el.length; i++) {
+                    el[i].remove()
+                }
+
+                // append text danger if validation error
+                if (secret == "") {
+                    $("#input-secret").append(`
+                    <div class="text-danger">
+                        <small>
+                            Kode verifikasi tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                return false
+            }
+
+            $("#verificate-form").submit(function (e) {
+                e.preventDefault()
+                const form = $(this)
+                const url = form.attr("action")
+                const lstorage = JSON.parse(localStorage.getItem("registration"))
+                const data = {
+                    secret: $("#secret").val(),
+                    requester_email : lstorage.email
+                }
+                const v = validation(data)
+
+                if (!v) {
+                    $.ajax({
+                        url,
+                        method: "post",
+                        data: JSON.stringify(data),
+                        contentType: "application/json",
+                        beforeSend: function () {
+                            setup_alert("", "loading")
+                        },
+                        success: function (res) {
+                            const { message, success, data } = res
+                            if (success) {
+                                setup_alert("verifikasi berhasil", "success")
+                                setTimeout(() => {
+                                    window.location.replace("/registration/step-3")
+                                }, 3000)
+                            } else setup_alert("kode verifikasi salah", "failed") 
+                        },
+                        error: function (request, status, error) {
+                            errObj = JSON.parse(request.responseText)
+                            setup_alert(errObj.message, "failed")
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>

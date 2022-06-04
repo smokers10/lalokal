@@ -18,7 +18,7 @@
         "mongo_uri": "mongodb://localhost:27017",
         "database_name": "lalokal",
         "session_storage": "session",
-        "max_pool": 5,
+        "max_pool": 50,
         "min_pool": 10,
         "max_idle_connection": 1
     }

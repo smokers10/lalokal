@@ -935,7 +935,7 @@ func TestVerificateEmail(t *testing.T) {
 
 		expected := common_testing.Expectation{
 			Message: "kode verifikasi salah",
-			Status:  401,
+			Status:  200,
 		}
 
 		verificationRepo.Mock.On("FindOneByEmail", mock.Anything).Return(&verification.Verification{Id: mock.Anything, Status: "not verified"}).Once()
@@ -1004,19 +1004,6 @@ func TestVerificationRequest(t *testing.T) {
 		}
 	})
 
-	t.Run("verification not found", func(t *testing.T) {
-		expected := common_testing.Expectation{
-			Message: "sesi verifikasi tidak ada",
-			Status:  404,
-		}
-
-		verificationRepo.Mock.On("FindOneByEmail", mock.Anything).Return(&verification.Verification{}).Once()
-
-		res := service.VerificationRequest("johndoe@gmail.com")
-
-		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
-	})
-
 	t.Run("already verification", func(t *testing.T) {
 		expected := common_testing.Expectation{
 			Message: "email sudah terverifikasi",
@@ -1083,6 +1070,6 @@ func TestVerificationRequest(t *testing.T) {
 
 		res := service.VerificationRequest("johndoe@gmail.com")
 
-		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
 	})
 }

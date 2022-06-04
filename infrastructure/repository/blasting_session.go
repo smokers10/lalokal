@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"lalokal/domain/blasting_session"
 	"lalokal/infrastructure/lib"
 
@@ -12,21 +11,17 @@ import (
 
 type blastingSessionRepository struct {
 	collection mongo.Collection
-	ctx        context.Context
-	cancel     context.CancelFunc
 }
 
 func BlastingSessionRepository(db *mongo.Database) blasting_session.Repository {
-	ctx, cancel := lib.InitializeContex()
 	return &blastingSessionRepository{
 		collection: *db.Collection("blasting_session"),
-		ctx:        ctx,
-		cancel:     cancel,
 	}
 }
 
 func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSession) (inserted_id string, failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
 	document := bson.M{
@@ -36,7 +31,7 @@ func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSessio
 		"topic_id": topicId,
 	}
 
-	result, err := r.collection.InsertOne(r.ctx, document)
+	result, err := r.collection.InsertOne(ctx, document)
 	if err != nil {
 		return "", err
 	}
@@ -45,7 +40,8 @@ func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSessio
 }
 
 func (r *blastingSessionRepository) Update(data *blasting_session.BlastingSession) (failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	_id, _ := primitive.ObjectIDFromHex(data.Id)
 	document := bson.M{
@@ -55,7 +51,7 @@ func (r *blastingSessionRepository) Update(data *blasting_session.BlastingSessio
 		},
 	}
 
-	if err := r.collection.FindOneAndUpdate(r.ctx, bson.M{"_id": _id}, document).Err(); err != nil {
+	if err := r.collection.FindOneAndUpdate(ctx, bson.M{"_id": _id}, document).Err(); err != nil {
 		return err
 	}
 
@@ -63,16 +59,17 @@ func (r *blastingSessionRepository) Update(data *blasting_session.BlastingSessio
 }
 
 func (r *blastingSessionRepository) FindByTopicId(topic_id string) (result []blasting_session.BlastingSession) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	topicId, _ := primitive.ObjectIDFromHex(topic_id)
 
-	cursor, err := r.collection.Find(r.ctx, bson.M{"topic_id": topicId})
+	cursor, err := r.collection.Find(ctx, bson.M{"topic_id": topicId})
 	if err != nil {
 		return []blasting_session.BlastingSession{}
 	}
 
-	if err := cursor.All(r.ctx, result); err != nil {
+	if err := cursor.All(ctx, result); err != nil {
 		return []blasting_session.BlastingSession{}
 	}
 
@@ -80,11 +77,12 @@ func (r *blastingSessionRepository) FindByTopicId(topic_id string) (result []bla
 }
 
 func (r *blastingSessionRepository) FindById(blasting_session_id string) (result *blasting_session.BlastingSession) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	_id, _ := primitive.ObjectIDFromHex(blasting_session_id)
 
-	if err := r.collection.FindOne(r.ctx, bson.M{"_id": _id}).Decode(&result); err != nil {
+	if err := r.collection.FindOne(ctx, bson.M{"_id": _id}).Decode(&result); err != nil {
 		return &blasting_session.BlastingSession{}
 	}
 
@@ -92,7 +90,8 @@ func (r *blastingSessionRepository) FindById(blasting_session_id string) (result
 }
 
 func (r *blastingSessionRepository) UpdateStatus(blasting_session_id string, status string) (failure error) {
-	defer r.cancel()
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
 
 	_id, _ := primitive.ObjectIDFromHex(blasting_session_id)
 	document := bson.M{
@@ -101,7 +100,7 @@ func (r *blastingSessionRepository) UpdateStatus(blasting_session_id string, sta
 		},
 	}
 
-	if err := r.collection.FindOneAndUpdate(r.ctx, bson.M{"_id": _id}, document).Err(); err != nil {
+	if err := r.collection.FindOneAndUpdate(ctx, bson.M{"_id": _id}, document).Err(); err != nil {
 		return err
 	}
 
