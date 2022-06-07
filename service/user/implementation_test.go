@@ -419,7 +419,7 @@ func TestRegister(t *testing.T) {
 		}
 		expected := common_testing.Expectation{
 			Message: "pengguna sudah terdaftar",
-			Status:  401,
+			Status:  409,
 		}
 
 		verificationRepo.Mock.On("FindOneByEmail", mock.Anything).Return(&verification.Verification{Status: "verified"}).Once()

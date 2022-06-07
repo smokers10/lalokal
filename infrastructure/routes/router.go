@@ -3,6 +3,7 @@ package routes
 import (
 	"lalokal/controller"
 	"lalokal/infrastructure/injector"
+	"lalokal/infrastructure/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -10,8 +11,11 @@ import (
 func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	mainController := controller.MainController(solvent)
 
+	// login
 	authController := mainController.LoginController()
 	app.Get("/", authController.LoginPage)
+	app.Post("/login/submission", authController.LoginSubmission)
+	app.Get("/logout", middleware.UserMiddleware(injector.Injector()), authController.Logout)
 
 	// register
 	registrationController := mainController.RegistrationController()
@@ -25,6 +29,6 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 
 	// test
 	testController := mainController.TestController()
-	testPath := app.Group("/test")
+	testPath := app.Group("/test", middleware.UserMiddleware(injector.Injector()))
 	testPath.Get("/", testController.Protected)
 }

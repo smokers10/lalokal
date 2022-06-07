@@ -99,11 +99,20 @@
                             setup_alert("email verifikasi terkirim check inbox atau spam anda", "success")
                             setTimeout(() => {
                                 window.location.replace("/registration/step-2")
-                            }, 3000)
+                            }, 1500)
                         },
                         error: function (request, status, error) {
                             errObj = JSON.parse(request.responseText)
                             setup_alert(errObj.message, "failed")
+                            if (errObj.status == 409) {
+                                localStorage.setItem("registration", JSON.stringify({
+                                    email: $("#email").val()
+                                }))
+
+                                setTimeout(() => {
+                                    window.location.replace("/registration/step-3")
+                                }, 1500)
+                            }
                         }
                     })
                 }

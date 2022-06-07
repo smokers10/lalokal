@@ -182,7 +182,7 @@ func (s *userService) Register(input *user.RegisterData) (response *http_respons
 	if user.Id != "" {
 		return &http_response.Response{
 			Message: "pengguna sudah terdaftar",
-			Status:  401,
+			Status:  409,
 		}
 	}
 

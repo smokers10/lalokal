@@ -24,12 +24,16 @@
                 <div class="shadow p-3 mb-5 bg-body rounded">
                     <h1>Login</h1>
                     <p>Silahkan masukan email dan password</p>
-                    <form action="#">
-                        <div class="mb-3">
-                            <input type="email" class="form-control" id="email" placeholder="Masukan email">
+                    <div id="alert-place"></div>
+                    <form action="/login/submission" id="login-form" novalidate>
+                        <div class="mb-3" id="input-email">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Masukan email" required>
                         </div>
-                        <div class="mb-3">
-                            <input type="password" class="form-control" id="password" placeholder="Masukan password">
+                        <div class="mb-3" id="input-password">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Masukan password"
+                                required>
                         </div>
                         <div class="mb-3 d-grid gap-2">
                             <button class="btn btn-primary btn-block" type="submit">
@@ -44,6 +48,80 @@
     </div>
 
     <script src="/boostrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/jquery/jquery.js"></script>
+    <script src="/script/lib/alert.js"></script>
+    <script>
+        $(function () {
+            function validation(data) {
+                const { email, password } = data
+
+                // remove text danger 
+                var el = document.getElementsByClassName("text-danger")
+                for (let i = 0; i < el.length; i++) {
+                    el[i].remove()
+                }
+
+                // append text danger if validation error
+                if (email == "") {
+                    $("#input-email").append(`
+                    <div class="text-danger">
+                        <small>
+                            email tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                if (password == "") {
+                    $("#input-password").append(`
+                    <div class="text-danger">
+                        <small>
+                            password tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                    return true
+                }
+
+                return false
+            }
+
+            $("#login-form").submit(function (e) {
+                e.preventDefault()
+                const form = $(this)
+                const url = form.attr("action")
+                const data = {
+                    email: $("#email").val(),
+                    password: $("#password").val(),
+                }
+                const v = validation(data)
+
+                if (!v) {
+                    $.ajax({
+                        url,
+                        method: "post",
+                        data: JSON.stringify(data),
+                        contentType: "application/json",
+                        beforeSend: function () {
+                            setup_alert("", "loading")
+                        },
+                        success: function (res) {
+                            const { message, success, data } = res
+                            if (success) {
+                                setup_alert("login berhasil", "success")
+                                localStorage.setItem("user", JSON.stringify(data))
+                            }
+                        },
+                        error: function (request, status, error) {
+                            errObj = JSON.parse(request.responseText)
+                            setup_alert(errObj.message, "failed")
+                        }
+                    })
+                }
+            })
+        })
+    </script>
 </body>
 
 </html>

@@ -12,8 +12,8 @@ type RegisterData struct {
 	Name           string `json:"name" form:"name"`
 	CompanyName    string `json:"company_name" form:"company_name"`
 	Email          string `json:"email" form:"email"`
-	Password       string `json:"password" form:"password"`
-	CofirmPassword string `json:"confirm_password" form:"confirm_password"`
+	Password       string `json:"password,omitempty" form:"password"`
+	CofirmPassword string `json:"confirm_password,omitempty" form:"confirm_password"`
 }
 
 type VerificateEmailData struct {
