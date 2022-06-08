@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func UserMiddleware(injector *injector.InjectorSolvent) fiber.Handler {
+func UserMiddlewareHandler(injector *injector.InjectorSolvent) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		sess, err := injector.Session.Get(c)
 		if err != nil {
@@ -42,6 +42,23 @@ func UserMiddleware(injector *injector.InjectorSolvent) fiber.Handler {
 
 		if !res.Is_pass && res.Reason == "not verified" {
 			return c.Redirect("/registration/step-1")
+		}
+
+		return c.Next()
+	}
+}
+
+func GuestHandler(injector *injector.InjectorSolvent) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		sess, err := injector.Session.Get(c)
+		if err != nil {
+			panic(err)
+		}
+
+		token := sess.Get("token")
+
+		if token != nil {
+			return c.Redirect("/user/topic")
 		}
 
 		return c.Next()

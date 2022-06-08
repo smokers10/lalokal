@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
-    <link rel="stylesheet" href="/boostrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/boostrap-5/css/bootstrap.min.css">
     <style>
         body,
         html {
@@ -47,7 +47,7 @@
         </div>
     </div>
 
-    <script src="/boostrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/boostrap-5/js/bootstrap.bundle.min.js"></script>
     <script src="/jquery/jquery.js"></script>
     <script src="/script/lib/alert.js"></script>
     <script>
@@ -111,6 +111,9 @@
                             if (success) {
                                 setup_alert("login berhasil", "success")
                                 localStorage.setItem("user", JSON.stringify(data))
+                                setTimeout(() => {
+                                    window.location.replace("/user/topic")
+                                }, 1000);
                             }
                         },
                         error: function (request, status, error) {
