@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"lalokal/domain/topic"
 	"lalokal/infrastructure/lib"
 
@@ -44,11 +45,14 @@ func (r *topicRepository) Update(data *topic.Topic) (failure error) {
 
 	_id, _ := primitive.ObjectIDFromHex(data.Id)
 	document := bson.M{
-		"title":       data.Title,
-		"description": data.Description,
+		"$set": bson.M{
+			"title":       data.Title,
+			"description": data.Description,
+		},
 	}
 
 	if err := r.collection.FindOneAndUpdate(ctx, bson.M{"_id": _id}, document).Err(); err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -66,7 +70,7 @@ func (r *topicRepository) FindByUserId(user_id string) (result []topic.Topic) {
 		return []topic.Topic{}
 	}
 
-	if err := cursor.All(ctx, result); err != nil {
+	if err := cursor.All(ctx, &result); err != nil {
 		return []topic.Topic{}
 	}
 

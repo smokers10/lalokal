@@ -15,6 +15,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="/admin-lte/plugins/fontawesome-free/css/all.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="/admin-lte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/admin-lte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="/admin-lte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="/admin-lte/dist/css/adminlte.min.css">
 </head>
@@ -27,7 +31,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <a href="/admin-lte/index3.html" class="navbar-brand">
                     <span class="brand-text font-weight-light">Jubilant Seller</span>
                 </a>
-      
+
                 <!-- Right navbar links -->
                 <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
                     <li class="nav-item">
@@ -52,7 +56,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </div><!-- /.col -->
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item active">Topik</li>
+                                <li class="breadcrumb-item active">
+                                    <button class="btn btn-primary" id="topic-button" data-action="store">Tambah
+                                        Topik</button>
+                                </li>
                             </ol>
                         </div><!-- /.col -->
                     </div><!-- /.row -->
@@ -66,18 +73,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="card">
+                                <!-- /.card-header -->
                                 <div class="card-body">
-                                    <h5 class="card-title">Card title</h5>
+                                    <table id="topic-table" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Judul</th>
+                                                <th>Deskripsi</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topic-table-content">
 
-                                    <p class="card-text">
-                                        Some quick example text to build on the card title and make up the bulk of the
-                                        card's
-                                        content.
-                                    </p>
-
-                                    <a href="#" class="card-link">Card link</a>
-                                    <a href="#" class="card-link">Another link</a>
+                                        </tbody>
+                                    </table>
                                 </div>
+                                <!-- /.card-body -->
                             </div>
                         </div>
                     </div>
@@ -101,16 +112,221 @@ scratch. This page gets rid of all links and provides the needed markup only.
     </div>
     <!-- ./wrapper -->
 
+    <!-- Modal -->
+    <div class="modal fade" id="topic-modal" tabindex="-1" role="dialog" aria-labelledby="modal-label"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-label"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <form id="topic-form">
+                    <input type="hidden" id="action">
+                    <input type="hidden" id="topic-id">
+
+                    <div class="modal-body">
+                        <div id="alert-place"></div>
+
+                        <div class="form-group" id="input-title">
+                            <label for="title">Judul</label>
+                            <input type="text" class="form-control" id="title" placeholder="Masukan judul">
+                        </div>
+
+                        <div class="form-group" id="input-description">
+                            <label for="description">Deskripsi</label>
+                            <input type="text" class="form-control" id="description"
+                                placeholder="Masukan deskripsi pendek topik">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal -->
+
     <!-- REQUIRED SCRIPTS -->
 
     <!-- jQuery -->
     <script src="/admin-lte/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="/admin-lte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables  & Plugins -->
+    <script src="/admin-lte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+    <script src="/admin-lte/plugins/jszip/jszip.min.js"></script>
+    <script src="/admin-lte/plugins/pdfmake/pdfmake.min.js"></script>
+    <script src="/admin-lte/plugins/pdfmake/vfs_fonts.js"></script>
+    <script src="/admin-lte/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+    <script src="/admin-lte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="/admin-lte/dist/js/demo.js"></script>
+    <!-- Page specific script -->
+    <script src="/script/lib/alert.js"></script>
+    <script>
+        function sendRequest(url, data, table) {
+            $.ajax({
+                url,
+                method: "post",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                beforeSend: function () {
+                    setup_alert("", "loading")
+                },
+                success: function (res) {
+                    const { message, success, data } = res
+                    setup_alert("aksi berhasil", "success")
+                    setTimeout(() => {
+                        $("#topic-modal").modal("hide")
+                        $("#topic-form").trigger("reset")
+                        table.ajax.reload()
+                    }, 1000)
+                },
+                error: function (request, status, error) {
+                    errObj = JSON.parse(request.responseText)
+                    setup_alert(errObj.message, "failed")
+                }
+            })
+        }
+
+        function validation(data) {
+            const { title, description } = data
+
+            // remove text danger 
+            var el = document.getElementsByClassName("text-danger")
+            for (let i = 0; i < el.length; i++) {
+                el[i].remove()
+            }
+
+            // append text danger if validation error
+            if (title == "") {
+                $("#input-title").append(`
+                    <div class="text-danger">
+                        <small>
+                            judul tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                return true
+            }
+
+            if (description == "") {
+                $("#input-description").append(`
+                    <div class="text-danger">
+                        <small>
+                            deskripsi tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                return true
+            }
+
+            return false
+        }
+
+        function openButton(target, action) {
+            $('#topic-modal').modal("show")
+            $("#action").val(action)
+            $("#topic-form").trigger("reset")
+
+            if (action == "store") {
+                $("#modal-label").text("Buat Topik Baru")
+            }
+
+            if (action == "update") {
+                $("#modal-label").text("Update Topik")
+                var t = $(target),
+                    id = t.attr("data-id"),
+                    title = t.attr("data-title"),
+                    description = t.attr("data-description");
+
+                $("#topic-id").val(id)
+                $("#title").val(title)
+                $("#description").val(description)
+            }
+
+            if (action == "delete") {
+                var t = $(target),
+                    id = t.attr("data-id");
+
+                $("#topic-id").val(id)
+            }
+        }
+
+        $(function () {
+            var table = $('#topic-table').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "language": { "emptyTable": "Belum ada topik yang Anda buat" },
+                "ajax": "/user/topic/get",
+                "columns": [
+                    { "data": "title" },
+                    { "data": "description" },
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return `
+                            <center>
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Aksi
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="#" data-id="${data.id}" data-title="${data.title}" data-description="${data.description}" onclick="openButton(this, 'update')">Edit</a>
+                                        <a class="dropdown-item" href="#" data-id="${data.id}">Akses Dashboard</a>
+                                    </div>
+                                </div>
+                            </center>
+                            `
+                        }
+                    }
+                ]
+            })
+
+            $("#topic-button").click(function (e) {
+                var data = $(this)
+                var action = $(data).attr("data-action")
+                openButton(null, action)
+            })
+
+            $("#topic-form").submit(function (e) {
+                e.preventDefault()
+                var action = $("#action").val()
+                var data = {
+                    title: $("#title").val(),
+                    description: $("#description").val(),
+                    id: $("#topic-id").val()
+                }
+
+                validation(data)
+
+                if (action == "store") {
+                    sendRequest("/user/topic/store", data, table)
+                }
+
+                if (action == "update") {
+                    sendRequest("/user/topic/update", data, table)
+                }
+            })
+        })
+    </script>
 </body>
 
 </html>

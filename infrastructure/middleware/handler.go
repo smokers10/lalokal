@@ -44,6 +44,9 @@ func UserMiddlewareHandler(injector *injector.InjectorSolvent) fiber.Handler {
 			return c.Redirect("/registration/step-1")
 		}
 
+		c.Locals("id", res.Claim.Id)
+		c.Locals("email", res.Claim.Email)
+
 		return c.Next()
 	}
 }

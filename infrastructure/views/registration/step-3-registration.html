@@ -170,6 +170,11 @@
                         success: function (res) {
                             const { message, success, data } = res
                             setup_alert("registrasi berhasil", "success")
+                            if (success) {
+                                setTimeout(() => {
+                                    window.location.replace("/user/topic")
+                                }, 1500)
+                            }
                         },
                         error: function (request, status, error) {
                             errObj = JSON.parse(request.responseText)

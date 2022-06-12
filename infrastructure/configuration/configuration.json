@@ -9,9 +9,9 @@
     "smtp" : {
         "host" : "smtp.gmail.com",
         "port" : 587,
-        "sender" : "Lalokal Marketing Tools <nadzarmutaqin4@gmail.com>",
-        "username" : "nadzarmutaqin4@gmail.com",
-        "password" : "kingmesix666"
+        "sender" : "Lalokal Marketing Tools <solarislight80@gmail.com>",
+        "username" : "solarislight80@gmail.com",
+        "password" : "hpgtmlihgxkovbty"
     },
 
     "database": {

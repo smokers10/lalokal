@@ -6,10 +6,12 @@ import (
 	service "lalokal/service/user"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 type registrationController struct {
 	userService user.Service
+	session     *session.Store
 }
 
 func (mc *mainController) RegistrationController() *registrationController {
@@ -17,7 +19,7 @@ func (mc *mainController) RegistrationController() *registrationController {
 		&mc.solvent.Repository.VerificationRepository, &mc.solvent.Encryption, &mc.solvent.JsonWebToken,
 		&mc.solvent.Identifier, &mc.solvent.Mailer)
 
-	return &registrationController{userService: userService}
+	return &registrationController{userService: userService, session: &mc.solvent.Session}
 }
 
 func (rc *registrationController) EmailVerificationRequestPage(c *fiber.Ctx) error {
@@ -54,6 +56,16 @@ func (rc *registrationController) RegistrationSubmission(c *fiber.Ctx) error {
 	c.BodyParser(&body)
 
 	res := rc.userService.Register(&body)
+
+	if res.Success {
+		sess, err := rc.session.Get(c)
+		if err != nil {
+			panic(err)
+		}
+
+		sess.Set("token", res.Token)
+		sess.Save()
+	}
 
 	return c.Status(res.Status).JSON(res)
 }

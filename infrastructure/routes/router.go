@@ -37,8 +37,12 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 
 	// topic
 	topicController := mainController.TopicController()
-	topicPath := userPath.Group("/topic")
+	topicPath := userPath.Group("/topic", userMiddleware)
 	topicPath.Get("/", topicController.TopicPage)
+	topicPath.Get("/get", topicController.ReadAll)
+	topicPath.Get("/get/:id", topicController.Detail)
+	topicPath.Post("/store", topicController.Store)
+	topicPath.Post("/update", topicController.Update)
 
 	// test
 	testController := mainController.TestController()
