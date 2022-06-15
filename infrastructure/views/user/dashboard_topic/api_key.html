@@ -52,17 +52,21 @@
                         <div class="card-body">
                             <h3>Masukan API & Secret Key Twitter</h3><br>
 
-                            <form action="">
-                                <div class="form-group">
+                            <form action="/user/topic/dashboard/twitter-api/store" id="api-token-form">
+                                <div id="alert-place"></div>
+
+                                <div class="form-group" id="input-token">
                                     <label for="token">Twitter API Key</label>
-                                    <input type="text" class="form-control" id="token" aria-describedby="emailHelp"
+                                    <input type="text" class="form-control" id="token"
                                         placeholder="Masukan API key twitter">
                                 </div>
-                                <div class="form-group">
+
+                                <div class="form-group" id="input-secret">
                                     <label for="secret">Twitter Secret Key</label>
                                     <input type="text" class="form-control" id="secret"
                                         placeholder="Masukan secret key twitter">
                                 </div>
+
                                 <div class="form-group">
                                     <div class="row">
                                         <div class="col-md-6"><a href="#">Cara Mendapatkan API & Secret Key Twitter</a>
@@ -115,8 +119,97 @@
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
+    <!-- Page specific script -->
+    <script src="/script/lib/alert.js"></script>
     <script>
+        function getApiKey(topicID) {
+            $.ajax({
+                url: `/user/topic/dashboard/twitter-api/get/${topicID}`,
+                success: function (res) {
+                    var data = res.data
+                    const {token, secret} = data
 
+                    $("#token").val(token)
+                    $("#secret").val(secret)
+                }
+            })
+        }
+
+        function validation(data) {
+            const { token, secret } = data
+
+            // remove text danger 
+            var el = document.getElementsByClassName("text-danger")
+            for (let i = 0; i < el.length; i++) {
+                el[i].remove()
+            }
+
+            if (token == "") {
+                $("#input-token").append(`
+                    <div class="text-danger">
+                        <small>
+                            token tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                return true
+            }
+
+            if (secret == "") {
+                $("#input-secret").append(`
+                    <div class="text-danger">
+                        <small>
+                            secret tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                return true
+            }
+
+            return false
+        }
+
+        function sendRequest(url, data) {
+            $.ajax({
+                url,
+                method: "post",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                beforeSend: function () {
+                    setup_alert("", "loading")
+                },
+                success: function (res) {
+                    const { message, success, data } = res
+                    setup_alert("aksi berhasil", "success")
+                },
+                error: function (request, status, error) {
+                    errObj = JSON.parse(request.responseText)
+                    setup_alert(errObj.message, "failed")
+                }
+            })
+        }
+
+        $(function () {
+            var topicID = localStorage.getItem("selected-topic")
+
+            getApiKey(topicID)
+
+            $("#api-token-form").submit(function (e) {
+                e.preventDefault()
+                var action = $(this).attr("action")
+                var data = {
+                    token: $("#token").val(),
+                    secret: $("#secret").val(),
+                    topic_id: topicID,
+                }
+
+                if (validation(data)) {
+                    return false
+                }
+
+                sendRequest(action, data)
+            })
+        })
     </script>
 </body>
 

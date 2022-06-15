@@ -20,3 +20,18 @@ func (mc *mainController) TwitterAPIController() twitterAPIController {
 func (tac *twitterAPIController) ManageTwitterAPIPage(c *fiber.Ctx) error {
 	return c.Render("user/dashboard_topic/api_key", nil)
 }
+
+func (tac *twitterAPIController) Store(c *fiber.Ctx) error {
+	body := twitter_api_token.TwitterAPIToken{}
+	c.BodyParser(&body)
+
+	res := tac.twitterAPIService.Store(&body)
+
+	return c.Status(res.Status).JSON(res)
+}
+
+func (tac *twitterAPIController) Read(c *fiber.Ctx) error {
+	res := tac.twitterAPIService.Read(c.Params("topic_id"))
+
+	return c.Status(res.Status).JSON(res)
+}

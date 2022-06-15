@@ -62,6 +62,8 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	twitterAPIPath := dashboardPath.Group("/twitter-api")
 	twitterAPIController := mainController.TwitterAPIController()
 	twitterAPIPath.Get("/", twitterAPIController.ManageTwitterAPIPage)
+	twitterAPIPath.Get("/get/:topic_id", twitterAPIController.Read)
+	twitterAPIPath.Post("/store", twitterAPIController.Store)
 
 	// keyword
 	keywordPath := dashboardPath.Group("/keyword")
