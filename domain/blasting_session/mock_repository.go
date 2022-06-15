@@ -30,3 +30,8 @@ func (m *MockRepository) UpdateStatus(blasting_session_id string, status string)
 	args := m.Mock.Called(blasting_session_id, status)
 	return args.Error(0)
 }
+
+func (m *MockRepository) Count(topic_id string) (count int) {
+	args := m.Mock.Called(topic_id)
+	return args.Int(0)
+}

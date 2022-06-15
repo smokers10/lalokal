@@ -14,6 +14,8 @@ type Repository interface {
 	Delete(keyword_id string) (failure error)
 
 	FindByTopicId(topic_id string) (result []Keyword)
+
+	Cound(topic_id string) (count int)
 }
 
 type Service interface {

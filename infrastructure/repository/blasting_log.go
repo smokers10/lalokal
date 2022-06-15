@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"lalokal/domain/blasting_log"
 	"lalokal/infrastructure/lib"
 
@@ -55,4 +56,19 @@ func (r *blastingLogRepository) FindByTopicId(topic_id string) (result []blastin
 	}
 
 	return result
+}
+
+func (r *blastingLogRepository) Count(topic_id string) (count int) {
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
+
+	tid, _ := primitive.ObjectIDFromHex(topic_id)
+
+	c, err := r.collection.CountDocuments(ctx, bson.M{"topic_id": tid, "status": "sent"})
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+
+	return int(c)
 }

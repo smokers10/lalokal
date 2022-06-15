@@ -30,16 +30,15 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Dashboard Topik</h1>
+                            <h1 class="m-0">Dashboard Topik / Sesi Blasting</h1>
                         </div><!-- /.col -->
-                        <!--
-                            <div class="col-sm-6">
-                                <ol class="breadcrumb float-sm-right">
-                                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                    <li class="breadcrumb-item active">Topic</li>
-                                </ol>
+
+                        <div class="col-sm-6">
+                            <div class="float-sm-right">
+                                <button class="btn btn-primary" id="session-blasting-btn" data-action="store">Tambah
+                                    Sesi</button>
                             </div>
-                        -->
+                        </div>
                     </div><!-- /.row -->
                 </div><!-- /.container-fluid -->
             </div>
@@ -48,100 +47,6 @@
             <!-- Main content -->
             <div class="content">
                 <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <b>API Token</b>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex justify-content-end">
-                                                <a href="#">Kelola</a>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <center>
-                                                <i class="fa fa-check fa-3x" aria-hidden="true"></i><br>
-                                                <b>selesai</b>
-                                            </center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <b>Jumlah Keyword</b>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex justify-content-end">
-                                                <a href="#">Kelola</a>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <center>
-                                                <h1>12</h1>
-                                                <b>keyword</b>
-                                            </center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <b>Jumlah Sesi</b>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex justify-content-end">
-                                                <a href="#">Kelola</a>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <center>
-                                                <h1>12</h1>
-                                                <b>Sesi</b>
-                                            </center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <b>Pesan Terkirim</b>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex justify-content-end">
-                                                <a href="#">Kelola</a>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <center>
-                                                <h1>12</h1>
-                                                <b>Pesan Terkirim</b>
-                                            </center>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Sesi Blasting</h5>
@@ -587,8 +492,47 @@
     </div>
     <!-- ./wrapper -->
 
-    <!-- REQUIRED SCRIPTS -->
+    <!-- Modal -->
+    <div class="modal fade" id="sessionBlastingModal" tabindex="-1" role="dialog"
+        aria-labelledby="sessionBlastingModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sessionBlastingModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
 
+                <form id="sb-form">
+                    <input type="hidden" id="action">
+                    <input type="hidden" id="sb-ID">
+
+                    <div class="modal-body">
+                        <div id="alert-place"></div>
+
+                        <div class="form-group" id="input-title">
+                            <label for="title">Judul</label>
+                            <input type="text" class="form-control" id="title"
+                                placeholder="Masukan judul sesi blasting">
+                        </div>
+
+                        <div class="form-group" id="input-message">
+                            <label for="message">Pesan</label>
+                            <input type="text" class="form-control" id="message"
+                                placeholder="Masukan pesan yang akan dikirim">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- REQUIRED SCRIPTS -->
     <!-- jQuery -->
     <script src="/admin-lte/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
@@ -609,16 +553,20 @@
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
     <script>
-        function InitPage() {
-            var topicId = localStorage.getItem("selected-topic")
-            $.ajax({
-                url: `/user/topic/dashboard/blasting-session/get-count/${topicId}`,
-            })
+        function openModal(target, action) {
+            $("#sessionBlastingModal").modal("show")
+            $("#action").val(action)
+
+            if (action == "store") {
+                $("#sessionBlastingModalLabel").text("Tambah Sesi Blasting")
+            }
+
+            if (action == "update") {
+                $("#sessionBlastingModalLabel").text("Update Sesi Blasting")
+            }
         }
 
         $(function () {
-            InitPage()
-
             var table = $('#table-session').DataTable({
                 "paging": true,
                 "lengthChange": false,
@@ -628,6 +576,23 @@
                 "autoWidth": false,
                 "responsive": true,
                 "language": { "emptyTable": "Belum ada topik yang Anda buat" },
+            })
+
+            $("#session-blasting-btn").click(function (e) {
+                var t = $(this)
+                var action = t.attr("data-action")
+                openModal(null, action)
+            })
+
+            $("#sb-form").click(function (e) {
+                e.preventDefault()
+
+                var data = {
+                    id: $("#sb-ID").val(),
+                    title: $("#title").val(),
+                    message: $("#message").val(),
+                }
+                var action = $("#action").val()
             })
         })
     </script>

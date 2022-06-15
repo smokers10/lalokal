@@ -15,3 +15,8 @@ func (m *MockRepository) FindByTopicId(topic_id string) (result []BlastingLogDom
 	args := m.Mock.Called(topic_id)
 	return args.Get(0).([]BlastingLogDomain)
 }
+
+func (m *MockRepository) Count(topic_id string) (count int) {
+	args := m.Mock.Called(topic_id)
+	return args.Int(0)
+}

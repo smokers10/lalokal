@@ -265,6 +265,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
             }
         }
 
+        function redirectToDashboard(id) {
+            localStorage.setItem("selected-topic", id)
+            location.replace("/user/topic/dashboard")
+        }
+
         $(function () {
             var table = $('#topic-table').DataTable({
                 "paging": true,
@@ -290,7 +295,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item" href="#" data-id="${data.id}" data-title="${data.title}" data-description="${data.description}" onclick="openButton(this, 'update')">Edit</a>
-                                        <a class="dropdown-item" href="#" data-id="${data.id}">Akses Dashboard</a>
+                                        <a class="dropdown-item" href="#" onclick="redirectToDashboard('${data.id}')">Akses Dashboard</a>
                                     </div>
                                 </div>
                             </center>

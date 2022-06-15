@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"lalokal/domain/blasting_session"
 	"lalokal/infrastructure/lib"
 
@@ -105,4 +106,19 @@ func (r *blastingSessionRepository) UpdateStatus(blasting_session_id string, sta
 	}
 
 	return nil
+}
+
+func (r *blastingSessionRepository) Count(topic_id string) (count int) {
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
+
+	tid, _ := primitive.ObjectIDFromHex(topic_id)
+
+	c, err := r.collection.CountDocuments(ctx, bson.M{"topic_id": tid})
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+
+	return int(c)
 }

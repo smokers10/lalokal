@@ -1,5 +1,7 @@
 package blasting_log
 
+var Status = []string{"sent", "failed"}
+
 type BlastingLogDomain struct {
 	Id                string `json:"id" form:"id" bson:"_id"`
 	Status            string `json:"status" form:"status" bson:"status"`
@@ -11,4 +13,6 @@ type Repository interface {
 	Insert(data *BlastingLogDomain) (failure error)
 
 	FindByTopicId(topic_id string) (result []BlastingLogDomain)
+
+	Count(topic_id string) (count int)
 }

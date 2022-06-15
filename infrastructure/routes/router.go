@@ -44,6 +44,30 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	topicPath.Post("/store", topicController.Store)
 	topicPath.Post("/update", topicController.Update)
 
+	// dashboard
+	dashboardPath := topicPath.Group("/dashboard")
+	dashboardPath.Get("/", topicController.DashboardTopicPage)
+
+	// blasting session
+	blastingSessionPath := dashboardPath.Group("/blasting-session")
+	blastingSessionController := mainController.BlastingSessionController()
+	blastingSessionPath.Get("/", blastingSessionController.ManageSessionBlasstingPage)
+	blastingSessionPath.Get("/get-count/:topic_id", blastingSessionController.GetAllCount)
+	blastingSessionPath.Get("/get-all/:topic_id", blastingSessionController.GetAll)
+	blastingSessionPath.Get("/detail/:blasting_session_id", blastingSessionController.GetDetail)
+	blastingSessionPath.Post("/store", blastingSessionController.Store)
+	blastingSessionPath.Post("/update", blastingSessionController.Update)
+
+	// wtitter api key
+	twitterAPIPath := dashboardPath.Group("/twitter-api")
+	twitterAPIController := mainController.TwitterAPIController()
+	twitterAPIPath.Get("/", twitterAPIController.ManageTwitterAPIPage)
+
+	// keyword
+	keywordPath := dashboardPath.Group("/keyword")
+	keywordController := mainController.KeywordController()
+	keywordPath.Get("/", keywordController.ManageKeywordPage)
+
 	// test
 	testController := mainController.TestController()
 	testPath := app.Group("/user", userMiddleware)

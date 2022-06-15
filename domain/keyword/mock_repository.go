@@ -20,3 +20,8 @@ func (m *MockRepository) FindByTopicId(topic_id string) (result []Keyword) {
 	args := m.Mock.Called(topic_id)
 	return args.Get(0).([]Keyword)
 }
+
+func (m *MockRepository) Cound(topic_id string) (count int) {
+	args := m.Mock.Called(topic_id)
+	return args.Int(0)
+}

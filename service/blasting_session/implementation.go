@@ -249,3 +249,29 @@ func (s *blastingSessionService) Blast(blasting_session_id string) (response *ht
 		Status:  200,
 	}
 }
+
+func (s *blastingSessionService) Count(topic_id string) (response *http_response.Response) {
+	BScount := s.blastingSessionRepository.Count(topic_id)
+	Kcount := s.keywordRepository.Cound(topic_id)
+	BSLCount := s.blastingLogRepository.Count(topic_id)
+	apiToken := s.twitterAPITokenRepository.FindOneByTopicId(topic_id)
+	var isTokenSet bool
+
+	if apiToken.Id == "" {
+		isTokenSet = false
+	} else {
+		isTokenSet = true
+	}
+
+	return &http_response.Response{
+		Message: "perhitungan berhasil diambil",
+		Success: true,
+		Status:  200,
+		Data: map[string]interface{}{
+			"blasting_session_count":     BScount,
+			"keyword_count":              Kcount,
+			"blasting_session_log_count": BSLCount,
+			"is_token_set":               isTokenSet,
+		},
+	}
+}

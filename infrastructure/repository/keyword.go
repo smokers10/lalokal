@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"lalokal/domain/keyword"
 	"lalokal/infrastructure/lib"
 
@@ -66,4 +67,19 @@ func (r *keywordRepository) FindByTopicId(topic_id string) (result []keyword.Key
 	}
 
 	return result
+}
+
+func (r *keywordRepository) Cound(topic_id string) (count int) {
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
+
+	topicId, _ := primitive.ObjectIDFromHex(topic_id)
+
+	c, err := r.collection.CountDocuments(ctx, bson.M{"topic_id": topicId})
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+
+	return int(c)
 }

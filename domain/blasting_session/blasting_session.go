@@ -20,6 +20,8 @@ type Repository interface {
 	FindById(blasting_session_id string) (result *BlastingSession)
 
 	UpdateStatus(blasting_session_id string, status string) (failure error)
+
+	Count(topic_id string) (count int)
 }
 
 type Service interface {
@@ -34,4 +36,6 @@ type Service interface {
 	Scrape(blasting_session_id string) (response *http_response.Response)
 
 	Blast(blasting_session_id string) (response *http_response.Response)
+
+	Count(topic_id string) (response *http_response.Response)
 }

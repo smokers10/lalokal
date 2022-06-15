@@ -20,6 +20,10 @@ func (tc *topicController) TopicPage(c *fiber.Ctx) error {
 	return c.Render("user/topic/topic", nil)
 }
 
+func (tc *topicController) DashboardTopicPage(c *fiber.Ctx) error {
+	return c.Render("user/dashboard_topic/dashboard", nil)
+}
+
 func (tc *topicController) Store(c *fiber.Ctx) error {
 	body := topic.Topic{}
 	c.BodyParser(&body)

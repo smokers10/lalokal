@@ -10,6 +10,7 @@ import (
 	"lalokal/infrastructure/jsonwebtoken"
 	"lalokal/infrastructure/jsonwebtoken/jwt"
 	"lalokal/infrastructure/lib"
+	twitter_http_request "lalokal/infrastructure/lib/twitter_api"
 	"lalokal/infrastructure/mailer"
 	"lalokal/infrastructure/session_store"
 
@@ -22,6 +23,7 @@ type InjectorSolvent struct {
 	Identifier   identifier.Contract
 	JsonWebToken jsonwebtoken.Contact
 	Mailer       mailer.Contract
+	TwitterHTTP  twitter_http_request.Contract
 	Session      session.Store
 }
 
@@ -43,9 +45,9 @@ func Injector() *InjectorSolvent {
 	return &InjectorSolvent{
 		Repository:   compund,
 		Encryption:   bcrypt.Bcrypt(),
+		Identifier:   google_uuid.GoogleUUID(),
 		JsonWebToken: jwt.JsonWebToken(),
 		Mailer:       mailer.NativeSMTP(),
-		Identifier:   google_uuid.GoogleUUID(),
 		Session:      *session_store.MongoSessionStore(config.Database),
 	}
 }
