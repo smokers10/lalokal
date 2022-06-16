@@ -62,7 +62,7 @@ func (r *keywordRepository) FindByTopicId(topic_id string) (result []keyword.Key
 		return []keyword.Keyword{}
 	}
 
-	if err := cursor.All(ctx, result); err != nil {
+	if err := cursor.All(ctx, &result); err != nil {
 		return []keyword.Keyword{}
 	}
 

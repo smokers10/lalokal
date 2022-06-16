@@ -69,6 +69,9 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	keywordPath := dashboardPath.Group("/keyword")
 	keywordController := mainController.KeywordController()
 	keywordPath.Get("/", keywordController.ManageKeywordPage)
+	keywordPath.Get("/get/:id", keywordController.GetAll)
+	keywordPath.Post("/store", keywordController.Store)
+	keywordPath.Post("/delete", keywordController.Delete)
 
 	// test
 	testController := mainController.TestController()

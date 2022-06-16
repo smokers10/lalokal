@@ -51,39 +51,50 @@
                     <div class="card">
                         <div class="card-body">
                             <h3>Masukan Keyword</h3><br>
-                            <form action="">
-                                <div class="form-group">
-                                    <div class="row">
-                                        <div class="col-11">
-                                            <input type="text" class="form-control" id="token" placeholder="Masukan Keyword">
-                                        </div>
-                                        <div class="col-1">
-                                            <button class="btn btn-primary">
-                                                <i class="fas fa-save"></i>
-                                            </button>
-                                        </div>
+                        </div>
+
+
+                        <div class="mx-5">
+                            <div id="alert-place"></div>
+
+                            <div id="k-place">
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <div class="row" id="input-keyword">
+                                    <div class="col-11">
+                                        <input type="text" class="form-control" id="keyword"
+                                            placeholder="Masukan Keyword">
+                                    </div>
+                                    <div class="col-1">
+                                        <button class="btn btn-primary" id="btn-submit">
+                                            <i class="fas fa-save"></i>
+                                        </button>
                                     </div>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
-                    <!-- /.row -->
-                </div><!-- /.container-fluid -->
-            </div>
-            <!-- /.content -->
+                </div>
+                <!-- /.row -->
+            </div><!-- /.container-fluid -->
         </div>
-        <!-- /.content-wrapper -->
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
 
-        <!-- Main Footer -->
-        <footer class="main-footer">
-            <!-- To the right -->
-            <div class="float-right d-none d-sm-inline">
-                Anything you want
-            </div>
-            <!-- Default to the left -->
-            <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights
-            reserved.
-        </footer>
+    <!-- Main Footer -->
+    <footer class="main-footer">
+        <!-- To the right -->
+        <div class="float-right d-none d-sm-inline">
+            Anything you want
+        </div>
+        <!-- Default to the left -->
+        <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights
+        reserved.
+    </footer>
     </div>
     <!-- ./wrapper -->
 
@@ -108,8 +119,126 @@
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
+    <script src="/script/lib/alert.js"></script>
     <script>
+        function validation(data) {
+            const { keyword } = data
 
+            // remove text danger 
+            var el = document.getElementsByClassName("text-danger")
+            for (let i = 0; i < el.length; i++) {
+                el[i].remove()
+            }
+
+            // append text danger if validation error
+            if (keyword == "") {
+                $("#input-keyword").append(`
+                    <div class="text-danger">
+                        <small>
+                            Keyword tidak boleh kosong
+                        </small>
+                    </div>`)
+
+                return true
+            }
+
+            return false
+        }
+
+        function getAll() {
+            var idTopic = localStorage.getItem("selected-topic")
+            $.ajax({
+                url: `/user/topic/dashboard/keyword/get/${idTopic}`,
+                success: function (res) {
+                    var data = res.data
+                    data.forEach(el => {
+                        renderKeyword(el)
+                    })
+                }
+            })
+        }
+
+        function renderKeyword(data) {
+            var element = `<div class="form-group" id="${data.id}">
+                <div class="row">
+                    <div class="col-11">
+                        <input type="text" class="form-control" placeholder="Masukan Keyword" value="${data.keyword}" disabled>
+                    </div>
+                    <div class="col-1">
+                        <button class="btn btn-danger" onclick="deleteButton('${data.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`
+
+            $("#k-place").append(element)
+        }
+
+        function deleteButton(id) {
+            $(`#${id}`).remove()
+            var data = { id }
+            $.ajax({
+                url: "/user/topic/dashboard/keyword/delete",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (res) {
+                    const { message, success, data } = res
+                    setup_alert(message, "success")
+                },
+                error: function (request, status, error) {
+                    errObj = JSON.parse(request.responseText)
+                    setup_alert(errObj.message, "failed")
+                }
+            })
+
+            closeAlert()
+        }
+
+        function closeAlert() {
+            setTimeout(() => {
+                $("#alert-place").children().remove()
+            }, 1500)
+        }
+
+        $(function () {
+            getAll()
+
+            $("#btn-submit").click(function (e) {
+                e.preventDefault()
+                var data = {
+                    keyword: $("#keyword").val(),
+                    topic_id: localStorage.getItem("selected-topic"),
+                }
+
+                if (validation(data)) {
+                    return false
+                }
+
+                $.ajax({
+                    url: "/user/topic/dashboard/keyword/store",
+                    method: "post",
+                    data: JSON.stringify(data),
+                    contentType: "application/json",
+                    beforeSend: function () {
+                        setup_alert("", "loading")
+                    },
+                    success: function (res) {
+                        const { message, success, data } = res
+                        setup_alert(message, "success")
+                        renderKeyword(data)
+
+                    },
+                    error: function (request, status, error) {
+                        errObj = JSON.parse(request.responseText)
+                        setup_alert(errObj.message, "failed")
+                    }
+                })
+
+                closeAlert()
+            })
+        })
     </script>
 </body>
 
