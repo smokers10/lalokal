@@ -1,13 +1,19 @@
 package blasting_session
 
-import "lalokal/domain/http_response"
+import (
+	"lalokal/domain/http_response"
+	"time"
+)
 
 type BlastingSession struct {
-	Id      string `json:"id,omitempty" form:"id" bson:"_id"`
-	Title   string `json:"title,omitempty" form:"title" bson:"title"`
-	Message string `json:"message,omitempty" form:"message" bson:"message"`
-	Status  string `json:"status,omitempty" form:"status" bson:"status"`
-	TopicId string `json:"topic_id,omitempty" form:"topic_id" bson:"topic_id"`
+	Id           string    `json:"id,omitempty" form:"id" bson:"_id"`
+	Title        string    `json:"title,omitempty" form:"title" bson:"title"`
+	Message      string    `json:"message,omitempty" form:"message" bson:"message"`
+	Status       string    `json:"status,omitempty" form:"status" bson:"status"`
+	CreatedAt    time.Time `json:"created_at,omitempty" form:"created_at" bson:"created_at"`
+	SuccessCount float32   `json:"success_count"`
+	FailedCount  float32   `json:"failed_count"`
+	TopicId      string    `json:"topic_id,omitempty" form:"topic_id" bson:"topic_id"`
 }
 
 type Repository interface {

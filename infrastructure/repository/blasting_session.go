@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lalokal/domain/blasting_session"
 	"lalokal/infrastructure/lib"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,10 +27,11 @@ func (r *blastingSessionRepository) Insert(data *blasting_session.BlastingSessio
 
 	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
 	document := bson.M{
-		"title":    data.Title,
-		"message":  data.Message,
-		"status":   data.Status,
-		"topic_id": topicId,
+		"title":      data.Title,
+		"message":    data.Message,
+		"status":     data.Status,
+		"topic_id":   topicId,
+		"created_at": primitive.NewDateTimeFromTime(time.Now().Local()),
 	}
 
 	result, err := r.collection.InsertOne(ctx, document)
@@ -70,7 +72,7 @@ func (r *blastingSessionRepository) FindByTopicId(topic_id string) (result []bla
 		return []blasting_session.BlastingSession{}
 	}
 
-	if err := cursor.All(ctx, result); err != nil {
+	if err := cursor.All(ctx, &result); err != nil {
 		return []blasting_session.BlastingSession{}
 	}
 
