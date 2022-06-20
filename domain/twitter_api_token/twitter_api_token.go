@@ -5,10 +5,13 @@ import (
 )
 
 type TwitterAPIToken struct {
-	Id      string `json:"id" form:"id" bson:"_id"`
-	Token   string `json:"token" form:"token" bson:"token"`
-	Secret  string `json:"secret" form:"secret" bson:"secret"`
-	TopicId string `json:"topic_id" form:"topic_id" bson:"topic_id"`
+	Id             string `json:"id" form:"id" bson:"_id"`
+	APIToken       string `json:"api_token" form:"api_token" bson:"api_token"`
+	ConsumerKey    string `json:"consumer_key" form:"consumer_key" bson:"consumer_key"`
+	ConsumerSecret string `json:"consumer_secret" form:"consumer_secret" bson:"consumer_secret"`
+	AccessToken    string `json:"access_token" form:"access_token" bson:"access_token"`
+	AccessSecret   string `json:"access_secret" form:"access_secret" bson:"access_secret"`
+	TopicId        string `json:"topic_id" form:"topic_id" bson:"topic_id"`
 }
 
 type Repository interface {

@@ -28,38 +28,94 @@ func TestStore(t *testing.T) {
 			expected common_testing.Expectation
 		}{
 			{
-				label: "empty token",
+				label: "empty API token",
 				input: twitter_api_token.TwitterAPIToken{
-					Id:      mock.Anything,
-					Token:   "",
-					Secret:  mock.Anything,
-					TopicId: mock.Anything,
+					APIToken:       "",
+					ConsumerKey:    mock.Anything,
+					ConsumerSecret: mock.Anything,
+					AccessToken:    mock.Anything,
+					AccessSecret:   mock.Anything,
+					TopicId:        mock.Anything,
 				},
 				expected: common_testing.Expectation{
-					Message: "token tidak boleh kosong",
+					Message: "API token tidak boleh kosong",
 					Status:  400,
 				},
 			},
+
 			{
-				label: "empty secret",
+				label: "empty access secret",
 				input: twitter_api_token.TwitterAPIToken{
-					Id:      mock.Anything,
-					Token:   mock.Anything,
-					Secret:  "",
-					TopicId: mock.Anything,
+					APIToken:       mock.Anything,
+					ConsumerKey:    mock.Anything,
+					ConsumerSecret: mock.Anything,
+					AccessToken:    mock.Anything,
+					AccessSecret:   "",
+					TopicId:        mock.Anything,
 				},
 				expected: common_testing.Expectation{
-					Message: "secret token tidak boleh kosong",
+					Message: "access secret tidak boleh kosong",
 					Status:  400,
 				},
 			},
+
 			{
-				label: "empty topic id",
+				label: "empty access token",
 				input: twitter_api_token.TwitterAPIToken{
-					Id:      mock.Anything,
-					Token:   mock.Anything,
-					Secret:  mock.Anything,
-					TopicId: "",
+					APIToken:       mock.Anything,
+					ConsumerKey:    mock.Anything,
+					ConsumerSecret: mock.Anything,
+					AccessToken:    "",
+					AccessSecret:   mock.Anything,
+					TopicId:        mock.Anything,
+				},
+				expected: common_testing.Expectation{
+					Message: "access token tidak boleh kosong",
+					Status:  400,
+				},
+			},
+
+			{
+				label: "empty consumer key",
+				input: twitter_api_token.TwitterAPIToken{
+					APIToken:       mock.Anything,
+					ConsumerKey:    "",
+					ConsumerSecret: mock.Anything,
+					AccessToken:    mock.Anything,
+					AccessSecret:   mock.Anything,
+					TopicId:        mock.Anything,
+				},
+				expected: common_testing.Expectation{
+					Message: "consumer key tidak boleh kosong",
+					Status:  400,
+				},
+			},
+
+			{
+				label: "empty API token",
+				input: twitter_api_token.TwitterAPIToken{
+					APIToken:       mock.Anything,
+					ConsumerKey:    mock.Anything,
+					ConsumerSecret: "",
+					AccessToken:    mock.Anything,
+					AccessSecret:   mock.Anything,
+					TopicId:        mock.Anything,
+				},
+				expected: common_testing.Expectation{
+					Message: "consumer secret tidak boleh kosong",
+					Status:  400,
+				},
+			},
+
+			{
+				label: "empty API token",
+				input: twitter_api_token.TwitterAPIToken{
+					APIToken:       mock.Anything,
+					ConsumerKey:    mock.Anything,
+					ConsumerSecret: mock.Anything,
+					AccessToken:    mock.Anything,
+					AccessSecret:   mock.Anything,
+					TopicId:        "",
 				},
 				expected: common_testing.Expectation{
 					Message: "id topik tidak boleh kosong",
@@ -77,10 +133,12 @@ func TestStore(t *testing.T) {
 
 	t.Run("failed to upser twitter api token", func(t *testing.T) {
 		input := twitter_api_token.TwitterAPIToken{
-			Id:      mock.Anything,
-			Token:   mock.Anything,
-			Secret:  mock.Anything,
-			TopicId: mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
 		}
 
 		expected := common_testing.Expectation{
@@ -97,10 +155,12 @@ func TestStore(t *testing.T) {
 
 	t.Run("success condition", func(t *testing.T) {
 		input := twitter_api_token.TwitterAPIToken{
-			Id:      mock.Anything,
-			Token:   mock.Anything,
-			Secret:  mock.Anything,
-			TopicId: mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
 		}
 
 		expected := common_testing.Expectation{
@@ -137,11 +197,12 @@ func TestRead(t *testing.T) {
 		}
 
 		result := twitter_api_token.TwitterAPIToken{
-
-			Id:      mock.Anything,
-			Token:   mock.Anything,
-			Secret:  mock.Anything,
-			TopicId: mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
 		}
 		twitterAPIRepository.Mock.On("FindOneByTopicId", mock.Anything).Return(&result).Once()
 

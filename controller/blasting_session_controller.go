@@ -28,6 +28,10 @@ func (bss *blastingSessionController) ManageSessionBlasstingPage(c *fiber.Ctx) e
 	return c.Render("user/dashboard_topic/session_blasting", nil)
 }
 
+func (bss *blastingSessionController) SessionBlastingPage(c *fiber.Ctx) error {
+	return c.Render("user/dashboard_topic/blasting_control_page", nil)
+}
+
 func (bss *blastingSessionController) GetAllCount(c *fiber.Ctx) error {
 	res := bss.blastingSessionService.Count(c.Params("topic_id"))
 
@@ -60,6 +64,14 @@ func (bss *blastingSessionController) Update(c *fiber.Ctx) error {
 	c.BodyParser(&body)
 
 	res := bss.blastingSessionService.Update(&body)
+
+	return c.Status(res.Status).JSON(res)
+}
+
+func (bss *blastingSessionController) Scrape(c *fiber.Ctx) error {
+	bssID := c.Params("blasting_session_id")
+
+	res := bss.blastingSessionService.Scrape(bssID)
 
 	return c.Status(res.Status).JSON(res)
 }

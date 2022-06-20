@@ -366,7 +366,7 @@ func TestScrape(t *testing.T) {
 
 		// dummy query result
 		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, TopicId: mock.Anything}
-		twitter_api_token := &twitter_api_token.TwitterAPIToken{Token: mock.Anything, Secret: mock.Anything}
+		twitter_api_token := &twitter_api_token.TwitterAPIToken{APIToken: mock.Anything}
 		keywords := []keyword.Keyword{}
 
 		// action & asser
@@ -387,7 +387,7 @@ func TestScrape(t *testing.T) {
 
 		// dummy query result
 		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, TopicId: mock.Anything}
-		twitter_api_token := &twitter_api_token.TwitterAPIToken{Token: mock.Anything, Secret: mock.Anything}
+		twitter_api_token := &twitter_api_token.TwitterAPIToken{APIToken: mock.Anything}
 		keywords := []keyword.Keyword{
 			{
 				Id:      mock.Anything,
@@ -416,7 +416,7 @@ func TestScrape(t *testing.T) {
 
 		// dummy query result
 		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, TopicId: mock.Anything}
-		twitter_api_token := &twitter_api_token.TwitterAPIToken{Token: mock.Anything, Secret: mock.Anything}
+		twitter_api_token := &twitter_api_token.TwitterAPIToken{APIToken: mock.Anything}
 		keywords := []keyword.Keyword{
 			{
 				Id:      mock.Anything,

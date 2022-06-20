@@ -48,6 +48,7 @@ func Injector() *InjectorSolvent {
 		Identifier:   google_uuid.GoogleUUID(),
 		JsonWebToken: jwt.JsonWebToken(),
 		Mailer:       mailer.NativeSMTP(),
+		TwitterHTTP:  twitter_http_request.TwitterHTTP(),
 		Session:      *session_store.MongoSessionStore(config.Database),
 	}
 }

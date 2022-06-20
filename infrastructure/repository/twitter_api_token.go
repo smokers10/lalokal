@@ -27,8 +27,11 @@ func (r *twitterAPITokenRepository) Upsert(data *twitter_api_token.TwitterAPITok
 	topicId, _ := primitive.ObjectIDFromHex(data.TopicId)
 	document := bson.M{
 		"$set": bson.M{
-			"token":  data.Token,
-			"secret": data.Secret,
+			"api_token":       data.APIToken,
+			"consumer_key":    data.ConsumerKey,
+			"consumer_secret": data.ConsumerSecret,
+			"access_token":    data.AccessToken,
+			"access_secret":   data.AccessSecret,
 		},
 	}
 

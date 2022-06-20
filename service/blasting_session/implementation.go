@@ -121,7 +121,7 @@ func (s *blastingSessionService) Detail(blasting_session_id string) (response *h
 }
 
 func (s *blastingSessionService) Scrape(blasting_session_id string) (response *http_response.Response) {
-	tweets := []map[string]interface{}{}
+	tweets := []twitter_http_request.ScrapedTweet{}
 
 	if blasting_session_id == "" {
 		return &http_response.Response{
@@ -143,7 +143,7 @@ func (s *blastingSessionService) Scrape(blasting_session_id string) (response *h
 
 	// retireve twitter token
 	twitter_token := s.twitterAPITokenRepository.FindOneByTopicId(blasting_session.TopicId)
-	if twitter_token.Secret == "" || twitter_token.Token == "" {
+	if twitter_token.APIToken == "" {
 		return &http_response.Response{
 			Message: "api token twitter untuk topik tidak ada",
 			Status:  404,
@@ -160,7 +160,7 @@ func (s *blastingSessionService) Scrape(blasting_session_id string) (response *h
 	}
 
 	for _, k := range keywords {
-		scraped_tweets, err := s.twitter.Search(k.Keyword)
+		scraped_tweets, err := s.twitter.Search(k.Keyword, twitter_token.APIToken)
 		if err != nil {
 			fmt.Println(err)
 			return &http_response.Response{
@@ -169,7 +169,7 @@ func (s *blastingSessionService) Scrape(blasting_session_id string) (response *h
 			}
 		}
 
-		tweets = append(tweets, scraped_tweets...)
+		tweets = append(tweets, scraped_tweets.Data...)
 	}
 
 	return &http_response.Response{
@@ -207,6 +207,15 @@ func (s *blastingSessionService) Blast(blasting_session_id string) (response *ht
 		}
 	}
 
+	// retireve twitter token
+	twitter_token := s.twitterAPITokenRepository.FindOneByTopicId(blasting_session.TopicId)
+	if twitter_token.APIToken == "" {
+		return &http_response.Response{
+			Message: "api token twitter untuk topik tidak ada",
+			Status:  404,
+		}
+	}
+
 	// retrieve selected tweets
 	selected_tweet := s.selectedTweetRepository.FindByBlastingSessionId(blasting_session_id)
 
@@ -219,21 +228,7 @@ func (s *blastingSessionService) Blast(blasting_session_id string) (response *ht
 	}
 
 	// start BLASTING!!!
-	for _, st := range selected_tweet {
-		if err := s.twitter.DirectMessage(st.AuthorId, blasting_session.Message); err != nil {
-			s.blastingLogRepository.Insert(&blasting_log.BlastingLogDomain{
-				Status:            "gagal",
-				BlastingSessionId: blasting_session_id,
-				TopicId:           blasting_session.TopicId,
-			})
-		} else {
-			s.blastingLogRepository.Insert(&blasting_log.BlastingLogDomain{
-				Status:            "berhasil",
-				BlastingSessionId: blasting_session_id,
-				TopicId:           blasting_session.TopicId,
-			})
-		}
-	}
+	// blasting process
 
 	// update blasting session status
 	if err := s.blastingSessionRepository.UpdateStatus(blasting_session_id, "revoked"); err != nil {

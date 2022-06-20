@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Topik </title>
+    <title>Dashboard Topik | Kelola API & Secret Key</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/admin-lte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="/admin-lte/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/admin-lte/plugins/sweetalert2/sweetalert2.min.css">
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -30,13 +31,14 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Dashboard Topik / Sesi Blasting</h1>
+                            <h1 class="m-0" id="b-bread">Dashboard Topik / Sesi Blasting / </h1>
                         </div><!-- /.col -->
 
                         <div class="col-sm-6">
                             <div class="float-sm-right">
-                                <button class="btn btn-primary" id="session-blasting-btn" data-action="store">Tambah
-                                    Sesi</button>
+                                <button class="btn btn-success mr-2" id="start-scraping"> Mulai Scraping </button>
+                                <button class="btn btn-primary mr-2" onclick="openEditMessageModal()"> Ubah Pesan </button>
+                                <button class="btn btn-primary mr-2"> Mulai Blasting </button>
                             </div>
                         </div>
                     </div><!-- /.row -->
@@ -47,23 +49,30 @@
             <!-- Main content -->
             <div class="content">
                 <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3>Masukan API & Secret Key Twitter</h3><br>
-                            <table id="table-session" class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Judul</th>
-                                        <th>Tanggal Pembuatan</th>
-                                        <th>Persentasi Keberhasilan</th>
-                                        <th>Persentasi Kegagalan</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3>Tuitan</h3><br>
+                                    <div id="tweets-place">
+                                        <center>
+                                            <h4 class="text-muted">Silahkan mulai scraping</h4>
+                                        </center>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                                </tbody>
-                            </table>
+                        <div class="col-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3>Tuitan Terpilih</h3><br>
+
+                                    <div id="selected-tweets-place">
+                                    
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- /.row -->
@@ -73,7 +82,6 @@
         </div>
         <!-- /.content-wrapper -->
 
-        <!-- Main Footer -->
         {{ template "parts/footer" }}
     </div>
     <!-- ./wrapper -->
@@ -84,29 +92,22 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="sessionBlastingModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="sessionBlastingModalLabel">Edit Pesan</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
 
                 <form id="sb-form">
-                    <input type="hidden" id="action">
                     <input type="hidden" id="sb-ID">
+                    <input type="hidden" class="form-control" id="title" placeholder="Masukan judul sesi blasting">
 
                     <div class="modal-body">
                         <div id="alert-place"></div>
 
-                        <div class="form-group" id="input-title">
-                            <label for="title">Judul</label>
-                            <input type="text" class="form-control" id="title"
-                                placeholder="Masukan judul sesi blasting">
-                        </div>
-
                         <div class="form-group" id="input-message">
                             <label for="message">Pesan</label>
-                            <input type="text" class="form-control" id="message"
-                                placeholder="Masukan pesan yang akan dikirim">
+                            <textarea name="message" id="message" cols="10" rows="5" class="form-control"></textarea>
                         </div>
                     </div>
 
@@ -139,30 +140,35 @@
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
+    <link rel="stylesheet" href="/admin-lte/plugins/sweetalert2/sweetalert2.min.css">
+    <!-- Page specific script -->
     <script src="/script/lib/alert.js"></script>
     <script>
-        function openModal(target, action) {
+        function getTopicDetail() {
+            var sbid = localStorage.getItem("selected-blasting-session")
+            $.ajax({
+                url: `/user/topic/dashboard/blasting-session/detail/${sbid}`,
+                success: function (res) {
+                    const { title } = res.data
+                    $("#b-bread").text(`Dashboard Topik / Sesi Blasting / ${title}`)
+                }
+            })
+        }
+
+        function openEditMessageModal() {
             $("#sessionBlastingModal").modal("show")
-            $("#action").val(action)
             $("#sb-form").trigger("reset")
-
-            if (action == "store") {
-                $("#sessionBlastingModalLabel").text("Tambah Sesi Blasting")
-            }
-
-            if (action == "update") {
-                var sbid = $(target).attr("data-id")
-                $("#sessionBlastingModalLabel").text("Update Sesi Blasting")
-                $("#sb-ID").val(sbid)
-                $.ajax({
-                    url: `/user/topic/dashboard/blasting-session/detail/${sbid}`,
-                    success: function (res) {
-                        const { title, message } = res.data
-                        $("#title").val(title)
-                        $("#message").val(message)
-                    }
-                })
-            }
+            var sbid = localStorage.getItem("selected-blasting-session")
+            
+            $.ajax({
+                url: `/user/topic/dashboard/blasting-session/detail/${sbid}`,
+                success: function (res) {
+                    const { title, message } = res.data
+                    $("#title").val(title)
+                    $("#message").val(message)
+                    $("#sb-ID").val(sbid)
+                }
+            })
         }
 
         function validation(data) {
@@ -175,17 +181,6 @@
             }
 
             // append text danger if validation error
-            if (title == "") {
-                $("#input-title").append(`
-                    <div class="text-danger">
-                        <small>
-                            judul tidak boleh kosong
-                        </small>
-                    </div>`)
-
-                return true
-            }
-
             if (message == "") {
                 $("#input-message").append(`
                     <div class="text-danger">
@@ -200,13 +195,7 @@
             return false
         }
 
-        function closeAlert() {
-            setTimeout(() => {
-                $("#alert-place").children().remove()
-            }, 1500)
-        }
-
-        function sendRequest(url, data, table) {
+        function sendRequest(url, data) {
             $.ajax({
                 url,
                 method: "post",
@@ -218,7 +207,6 @@
                 success: function (res) {
                     const { message, success, data } = res
                     setup_alert(message, "success")
-                    table.ajax.reload()
                     setTimeout(() => {
                         $("#sessionBlastingModal").modal("hide")
                         $("#sb-form").trigger("reset")
@@ -235,62 +223,78 @@
             }, 1200)
         }
 
-        function redirectToControlPage(id) {
-            localStorage.setItem("selected-blasting-session", id)
-            location.replace("/user/topic/dashboard/blasting-session/control")
+        function closeAlert() {
+            setTimeout(() => {
+                $("#alert-place").children().remove()
+            }, 1500)
+        }
+
+        function rendertweet(data, type) {
+            const { id, created_at, text, author } = data
+            const { name, profile_image_url, username } = author.data
+            var btn
+            var mdata = JSON.stringify(data)
+            if (type == "selection") btn = `<button class="btn btn-primary btn-sm" onclick='selectTweet(${mdata})'>Pilih Tautan Ini</button>`
+            if (type == "selected") btn = `<button class="btn btn-danger btn-sm" onclick='cancelSelectedTweet(${mdata})'>Batalkan Pemilihan</button>`
+
+            return `
+                <div class="mt-2" id="tweet-${id}" data-author-id="">
+                    <div class="row mt-4">
+                        <div class="col-sm-1">
+                            <img src="${profile_image_url}" class="rounded-circle">
+                        </div>
+
+                        <div class="col-sm-10">
+                            <b>${name}</b> <b class="text-muted">@${username}</b><br>
+                            <small> ${created_at} </small>
+                        </div>
+                    </div>
+                    <p>
+                        ${text}
+                    </p>
+                    ${btn}
+                    <hr>
+                </div>
+            `
+        }
+
+        function selectTweet(data) {
+            $(`#tweet-${data.id}`).remove()
+            $("#selected-tweets-place").append(rendertweet(data, "selected"))
+        }
+
+        function cancelSelectedTweet(data) {
+            $(`#tweet-${data.id}`).remove()
+            $("#tweets-place").prepend(rendertweet(data, "selection"))
+        }
+       
+        function scrape(){
+            var sbid = localStorage.getItem("selected-blasting-session")
+            $.ajax({
+                url: `/user/topic/dashboard/blasting-session/scrape/${sbid}`,
+                beforeSend: function(){
+                    $("#tweets-place").children().remove()
+                    $("#tweets-place").append(` 
+                        <center>
+                            <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div><br><br>
+                            <h4>Scraping dimulai...</h4>
+                        </center>
+                    `)
+                },
+                success: function (res) {
+                    const data = res.data
+                    $("#tweets-place").children().remove()
+                    data.forEach(el => {
+                        $("#tweets-place").append(rendertweet(el, "selection"))
+                    })
+                }
+            })
         }
 
         $(function () {
-            var table = $('#table-session').DataTable({
-                "paging": true,
-                "lengthChange": false,
-                "searching": true,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false,
-                "responsive": true,
-                "language": { "emptyTable": "Belum ada sesi blasting yang Anda buat" },
-                "ajax": `/user/topic/dashboard/blasting-session/get-all/${localStorage.getItem("selected-topic")}`,
-                "columns": [
-                    { "data": "title" },
-                    { "data": "created_at" },
-                    {
-                        "data": function (data, type, row) {
-                            return `${data.success_count}%`
-                        }
-                    },
-                    {
-                        "data": function (data, type, row) {
-                            return `${data.failed_count}%`
-                        }
-                    },
-                    {
-                        "data": null,
-                        "render": function (data, type, row) {
-                            return `
-                            <center>
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Aksi
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item" href="#" data-id="${data.id}" onclick="openModal(this, 'update')">Edit</a>
-                                        <a class="dropdown-item" href="#">Buka Log Blasting</a>
-                                        <a class="dropdown-item" href="#" onclick="redirectToControlPage('${data.id}')">Buka Sesi Blasting</a>
-                                    </div>
-                                </div>
-                            </center>
-                            `
-                        }
-                    }
-                ]
-            })
-
-            $("#session-blasting-btn").click(function (e) {
-                var t = $(this)
-                var action = t.attr("data-action")
-                openModal(null, action)
-            })
+            getTopicDetail()
 
             $("#sb-form").submit(function (e) {
                 e.preventDefault()
@@ -302,15 +306,15 @@
                     topic_id: localStorage.getItem("selected-topic")
                 }
 
-                var action = $("#action").val()
-
                 if (validation(data)) {
                     return false
                 }
 
-                if (action == "store") sendRequest("/user/topic/dashboard/blasting-session/store", data, table)
+                sendRequest("/user/topic/dashboard/blasting-session/update", data)
+            })
 
-                if (action == "update") sendRequest("/user/topic/dashboard/blasting-session/update", data, table)
+            $("#start-scraping").click(function(e){
+                scrape()
             })
         })
     </script>

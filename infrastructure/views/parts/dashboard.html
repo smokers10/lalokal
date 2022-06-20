@@ -32,7 +32,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-item">
-                    <a href="/user/topic/dashboard/twitter-api" class="nav-link">
+                    <a href="/user/topic/dashboard/twitter-api" class="nav-link" id="api-menu">
                         <i class="nav-icon fas fa-key"></i>
                         <p>
                             API Token
@@ -41,7 +41,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="/user/topic/dashboard/keyword" class="nav-link">
+                    <a href="/user/topic/dashboard/keyword" class="nav-link" id="keyword-menu">
                         <i class="nav-icon fa fa-search" aria-hidden="true"></i>
                         <p>
                             Keyword
@@ -50,7 +50,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="/user/topic/dashboard/blasting-session" class="nav-link">
+                    <a href="/user/topic/dashboard/blasting-session" class="nav-link" id="blasting-session-menu">
                         <i class="nav-icon fas fa-bullhorn"></i>
                         <p>
                             Sesi Blasting
@@ -63,3 +63,15 @@
     </div>
     <!-- /.sidebar -->
 </aside>
+
+<script>
+    var activeAttribute = function (id) { document.getElementById(id).classList.add('active') }
+    const path = window.location.pathname
+    var parts = path.split("/")
+
+    if (parts[4] == "keyword") activeAttribute("keyword-menu")
+
+    if (parts[4] == "twitter-api") activeAttribute("api-menu")
+
+    if (parts[4] == "blasting-session") activeAttribute("blasting-session-menu")
+</script>
