@@ -59,6 +59,7 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	blastingSessionPath.Post("/store", blastingSessionController.Store)
 	blastingSessionPath.Post("/update", blastingSessionController.Update)
 	blastingSessionPath.Get("/scrape/:blasting_session_id", blastingSessionController.Scrape)
+	blastingSessionPath.Post("/blast", blastingSessionController.Blast)
 
 	// wtitter api key
 	twitterAPIPath := dashboardPath.Group("/twitter-api")

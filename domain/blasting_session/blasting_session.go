@@ -2,6 +2,7 @@ package blasting_session
 
 import (
 	"lalokal/domain/http_response"
+	"lalokal/domain/selected_tweet"
 	"time"
 )
 
@@ -41,7 +42,7 @@ type Service interface {
 
 	Scrape(blasting_session_id string) (response *http_response.Response)
 
-	Blast(blasting_session_id string) (response *http_response.Response)
+	Blast(blasting_session_id string, tweets []selected_tweet.SelectedTweet) (response *http_response.Response)
 
 	Count(topic_id string) (response *http_response.Response)
 }

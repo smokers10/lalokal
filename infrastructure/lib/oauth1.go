@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"lalokal/domain/twitter_api_token"
 	"math/rand"
 	"net/url"
 	"strconv"
@@ -11,14 +12,7 @@ import (
 	"time"
 )
 
-type OAuth1 struct {
-	ConsumerKey    string
-	ConsumerSecret string
-	AccessToken    string
-	AccessSecret   string
-}
-
-func (auth OAuth1) BuildHeader(method, path string) string {
+func BuildHeader(method, path string, auth twitter_api_token.TwitterAPIToken) string {
 	vals := url.Values{}
 	vals.Add("oauth_nonce", generateNonce())
 	vals.Add("oauth_consumer_key", auth.ConsumerKey)

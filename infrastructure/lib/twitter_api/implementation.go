@@ -1,8 +1,11 @@
 package twitter_http_request
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"lalokal/domain/twitter_api_token"
+	"lalokal/infrastructure/lib"
 	"net/http"
 )
 
@@ -10,11 +13,6 @@ type twitterHTTP struct{}
 
 func TwitterHTTP() Contract {
 	return &twitterHTTP{}
-}
-
-// DirectMessage implements Contract
-func (*twitterHTTP) DirectMessage(author_id string, message string, token string) (failure error) {
-	panic("unimplemented")
 }
 
 // Search implements Contract
@@ -54,6 +52,50 @@ func (*twitterHTTP) Search(keyword string, token string) (scraped_tweet *RetrunV
 	}
 
 	return scraped_tweet, nil
+}
+
+// DirectMessage implements Contract
+func (*twitterHTTP) DirectMessage(token twitter_api_token.TwitterAPIToken, event_object EOMap) (DSR *DMSuccessResponse, DER *DMErrorResponse) {
+	client := &http.Client{}
+	path := "https://api.twitter.com/1.1/direct_messages/events/new.json"
+	method := "POST"
+	auth_header := lib.BuildHeader(method, path, token)
+
+	// marshal event object
+	eo, err := json.Marshal(event_object)
+	if err != nil {
+		panic(err)
+	}
+
+	// init request
+	request, err := http.NewRequest(method, path, bytes.NewBuffer(eo))
+	if err != nil {
+		panic(err)
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", auth_header)
+
+	// start HTTP request
+	response, err := client.Do(request)
+	if err != nil {
+		panic(err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		if err := json.NewDecoder(response.Body).Decode(&DER); err != nil {
+			panic(err)
+		}
+
+		return nil, DER
+	}
+
+	if err := json.NewDecoder(response.Body).Decode(&DSR); err != nil {
+		panic(err)
+	}
+
+	return DSR, nil
 }
 
 func getUser(userid string, token string) (result UserDetail) {

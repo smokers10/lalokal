@@ -10,6 +10,7 @@ import (
 	"lalokal/infrastructure/lib/common_testing"
 	twitter_http_request "lalokal/infrastructure/lib/twitter_api"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -21,20 +22,18 @@ var (
 	twitterApiTokenRepo = twitter_api_token.MockRepository{Mock: mock.Mock{}}
 	keywordRepo         = keyword.MockRepository{Mock: mock.Mock{}}
 	twitter             = twitter_http_request.MockContract{Mock: mock.Mock{}}
-	selectedTweetRepo   = selected_tweet.MockRepository{Mock: mock.Mock{}}
 	service             = blastingSessionService{
 		blastingLogRepository:     &blastingLogRepo,
 		blastingSessionRepository: &blastingSessionRepo,
 		twitterAPITokenRepository: &twitterApiTokenRepo,
 		keywordRepository:         &keywordRepo,
 		twitter:                   &twitter,
-		selectedTweetRepository:   &selectedTweetRepo,
 	}
 )
 
 func TestService(t *testing.T) {
 	s := BlastingSessionService(&service.blastingLogRepository, &service.blastingSessionRepository, &service.twitterAPITokenRepository,
-		&service.keywordRepository, &service.twitter, &service.selectedTweetRepository)
+		&service.keywordRepository, &service.twitter)
 
 	assert.NotEmpty(t, s)
 }
@@ -308,7 +307,6 @@ func TestDetail(t *testing.T) {
 		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
 	})
 }
-
 func TestScrape(t *testing.T) {
 	t.Run("empty blasting session id", func(t *testing.T) {
 		expected := common_testing.Expectation{
@@ -400,7 +398,7 @@ func TestScrape(t *testing.T) {
 		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
 		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(twitter_api_token).Once()
 		keywordRepo.Mock.On("FindByTopicId", mock.Anything).Return(keywords).Once()
-		twitter.Mock.On("Search", mock.Anything).Return([]map[string]interface{}{}, errors.New(mock.Anything)).Once()
+		twitter.Mock.On("Search", mock.Anything).Return(&twitter_http_request.RetrunValue{}, errors.New(mock.Anything)).Once()
 
 		res := service.Scrape(mock.Anything)
 
@@ -424,18 +422,29 @@ func TestScrape(t *testing.T) {
 				TopicId: mock.Anything,
 			},
 		}
-		scraped_tweet := []map[string]interface{}{
-			{
-				"text":      mock.Anything,
-				"author_id": mock.Anything,
-			},
-		}
 
 		// action & asser
 		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
 		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(twitter_api_token).Once()
 		keywordRepo.Mock.On("FindByTopicId", mock.Anything).Return(keywords).Once()
-		twitter.Mock.On("Search", mock.Anything).Return(scraped_tweet, nil).Once()
+		twitter.Mock.On("Search", mock.Anything).Return(&twitter_http_request.RetrunValue{Data: []twitter_http_request.ScrapedTweet{
+			{
+				Id:        mock.Anything,
+				Text:      mock.Anything,
+				CreatedAt: time.Now(),
+				AuthorId:  mock.Anything,
+				Author: twitter_http_request.UserDetail{
+					Data: struct {
+						ProfileImageURL string "json:\"profile_image_url\""
+						Username        string "json:\"username\""
+						URL             string "json:\"url\""
+						Name            string "json:\"name\""
+					}{
+						ProfileImageURL: mock.Anything,
+					},
+				},
+			},
+		}}, nil).Once()
 
 		res := service.Scrape(mock.Anything)
 
@@ -444,132 +453,181 @@ func TestScrape(t *testing.T) {
 }
 
 func TestBlast(t *testing.T) {
-	t.Run("empty blasting session id", func(t *testing.T) {
+	tweets := []selected_tweet.SelectedTweet{
+		{
+			Id:                mock.Anything,
+			AuthorId:          mock.Anything,
+			TweetId:           mock.Anything,
+			Text:              mock.Anything,
+			CreatedAt:         time.Now(),
+			BlastingSessionId: mock.Anything,
+			Author: selected_tweet.Author{
+				Data: struct {
+					ProfileImageURL string "json:\"profile_image_url\""
+					Username        string "json:\"username\""
+					URL             string "json:\"url\""
+					Name            string "json:\"name\""
+				}{
+					ProfileImageURL: mock.Anything,
+					Username:        mock.Anything,
+					URL:             mock.Anything,
+					Name:            mock.Anything,
+				},
+			},
+		},
+	}
+
+	t.Run("empty blasting session", func(t *testing.T) {
 		expected := common_testing.Expectation{
 			Message: "id tidak boleh kosong",
 			Status:  400,
 		}
 
-		res := service.Blast("")
+		res := service.Blast("", nil)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
 	})
 
-	t.Run("empty blasting session", func(t *testing.T) {
+	t.Run("empty tweets", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "tidak ada tuitan yang dipilih",
+			Status:  400,
+		}
+
+		res := service.Blast(mock.Anything, nil)
+
+		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+	})
+
+	t.Run("blasting session", func(t *testing.T) {
 		expected := common_testing.Expectation{
 			Message: "sesi blasting tidak ditemukan",
 			Status:  404,
 		}
 
-		// dummy query result
-		blasting_sessions := &blasting_session.BlastingSession{}
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{}).Once()
 
-		// action & asser
-
-		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
-
-		res := service.Blast(mock.Anything)
+		res := service.Blast(mock.Anything, tweets)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
 	})
 
-	t.Run("revoked blasting session", func(t *testing.T) {
+	t.Run("blasting session is revoked", func(t *testing.T) {
 		expected := common_testing.Expectation{
 			Message: "sesi blasting sudah selesai",
 			Status:  403,
 		}
 
-		// dummy query result
-		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, Status: "revoked"}
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{
+			Id:           mock.Anything,
+			Title:        mock.Anything,
+			Message:      mock.Anything,
+			Status:       "revoked",
+			CreatedAt:    time.Now(),
+			SuccessCount: 0,
+			FailedCount:  0,
+			TopicId:      mock.Anything,
+		}).Once()
 
-		// action & assert
-
-		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
-
-		res := service.Blast(mock.Anything)
+		res := service.Blast(mock.Anything, tweets)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
 	})
 
-	t.Run("no selected tweets", func(t *testing.T) {
+	t.Run("empty twitter token", func(t *testing.T) {
 		expected := common_testing.Expectation{
-			Message: "tidak ada tuitan yang dipilih",
+			Message: "token twitter tidak boleh kosong",
 			Status:  404,
 		}
 
-		// dummy query result
-		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, Status: "waiting"}
-		selected_tweets := []selected_tweet.SelectedTweet{}
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{
+			Id:           mock.Anything,
+			Title:        mock.Anything,
+			Message:      mock.Anything,
+			Status:       "waiting",
+			CreatedAt:    time.Now(),
+			SuccessCount: 0,
+			FailedCount:  0,
+			TopicId:      mock.Anything,
+		}).Once()
 
-		// action & assert
-		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
-		selectedTweetRepo.Mock.On("FindByBlastingSessionId", mock.Anything).Return(selected_tweets).Once()
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{}).Once()
 
-		res := service.Blast(mock.Anything)
-
-		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
-	})
-
-	t.Run("failed to send message", func(t *testing.T) {
-		expected := common_testing.Expectation{
-			Message: "blasting selesai",
-			Success: true,
-			Status:  200,
-		}
-
-		// dummy query result
-		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, Status: "waiting"}
-		selected_tweets := []selected_tweet.SelectedTweet{
-			{
-				Id:                mock.Anything,
-				AuthorId:          mock.Anything,
-				TweetId:           mock.Anything,
-				Text:              mock.Anything,
-				BlastingSessionId: mock.Anything,
-			},
-		}
-
-		// action & assert
-		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
-		selectedTweetRepo.Mock.On("FindByBlastingSessionId", mock.Anything).Return(selected_tweets).Once()
-
-		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(errors.New(mock.Anything)).Once()
-		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(nil).Once()
-		blastingSessionRepo.Mock.On("UpdateStatus", mock.Anything, mock.Anything).Return(nil).Once()
-
-		res := service.Blast(mock.Anything)
+		res := service.Blast(mock.Anything, tweets)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
 	})
 
-	t.Run("success to send message", func(t *testing.T) {
+	t.Run("DM not sent & failed to store log", func(t *testing.T) {
 		expected := common_testing.Expectation{
-			Message: "blasting selesai",
-			Success: true,
-			Status:  200,
+			Message: "gagal menyimpan log",
+			Status:  500,
 		}
 
-		// dummy query result
-		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, Status: "waiting"}
-		selected_tweets := []selected_tweet.SelectedTweet{
-			{
-				Id:                mock.Anything,
-				AuthorId:          mock.Anything,
-				TweetId:           mock.Anything,
-				Text:              mock.Anything,
-				BlastingSessionId: mock.Anything,
-			},
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{
+			Id:           mock.Anything,
+			Title:        mock.Anything,
+			Message:      mock.Anything,
+			Status:       "waiting",
+			CreatedAt:    time.Now(),
+			SuccessCount: 0,
+			FailedCount:  0,
+			TopicId:      mock.Anything,
+		}).Once()
+
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{
+			Id:             mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
+		}).Once()
+
+		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(&twitter_http_request.DMSuccessResponse{}, &twitter_http_request.DMErrorResponse{}).Once()
+
+		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(errors.New(mock.Anything)).Once()
+
+		res := service.Blast(mock.Anything, tweets)
+
+		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+	})
+
+	t.Run("DM sent & failed to store log", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "gagal menyimpan log",
+			Status:  500,
 		}
 
-		// action & assert
-		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
-		selectedTweetRepo.Mock.On("FindByBlastingSessionId", mock.Anything).Return(selected_tweets).Once()
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{
+			Id:           mock.Anything,
+			Title:        mock.Anything,
+			Message:      mock.Anything,
+			Status:       "waiting",
+			CreatedAt:    time.Now(),
+			SuccessCount: 0,
+			FailedCount:  0,
+			TopicId:      mock.Anything,
+		}).Once()
 
-		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(nil).Once()
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{
+			Id:             mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
+		}).Once()
+
+		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(&twitter_http_request.DMSuccessResponse{}, &twitter_http_request.DMErrorResponse{}).Once()
+
 		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(nil).Once()
-		blastingSessionRepo.Mock.On("UpdateStatus", mock.Anything, mock.Anything).Return(nil).Once()
 
-		res := service.Blast(mock.Anything)
+		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(errors.New(mock.Anything)).Once()
+
+		res := service.Blast(mock.Anything, tweets)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
 	})
@@ -580,27 +638,77 @@ func TestBlast(t *testing.T) {
 			Status:  500,
 		}
 
-		// dummy query result
-		blasting_sessions := &blasting_session.BlastingSession{Id: mock.Anything, Status: "waiting"}
-		selected_tweets := []selected_tweet.SelectedTweet{
-			{
-				Id:                mock.Anything,
-				AuthorId:          mock.Anything,
-				TweetId:           mock.Anything,
-				Text:              mock.Anything,
-				BlastingSessionId: mock.Anything,
-			},
-		}
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{
+			Id:           mock.Anything,
+			Title:        mock.Anything,
+			Message:      mock.Anything,
+			Status:       "waiting",
+			CreatedAt:    time.Now(),
+			SuccessCount: 0,
+			FailedCount:  0,
+			TopicId:      mock.Anything,
+		}).Once()
 
-		// action & assert
-		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(blasting_sessions).Once()
-		selectedTweetRepo.Mock.On("FindByBlastingSessionId", mock.Anything).Return(selected_tweets).Once()
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{
+			Id:             mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
+		}).Once()
 
-		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(nil).Once()
+		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(&twitter_http_request.DMSuccessResponse{}, &twitter_http_request.DMErrorResponse{}).Once()
+
 		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(nil).Once()
+
+		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(nil).Once()
+
 		blastingSessionRepo.Mock.On("UpdateStatus", mock.Anything, mock.Anything).Return(errors.New(mock.Anything)).Once()
 
-		res := service.Blast(mock.Anything)
+		res := service.Blast(mock.Anything, tweets)
+
+		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+	})
+
+	t.Run("success condition", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "blasting selesai",
+			Success: true,
+			Status:  200,
+		}
+
+		blastingSessionRepo.Mock.On("FindById", mock.Anything).Return(&blasting_session.BlastingSession{
+			Id:           mock.Anything,
+			Title:        mock.Anything,
+			Message:      mock.Anything,
+			Status:       "waiting",
+			CreatedAt:    time.Now(),
+			SuccessCount: 0,
+			FailedCount:  0,
+			TopicId:      mock.Anything,
+		}).Once()
+
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{
+			Id:             mock.Anything,
+			APIToken:       mock.Anything,
+			ConsumerKey:    mock.Anything,
+			ConsumerSecret: mock.Anything,
+			AccessToken:    mock.Anything,
+			AccessSecret:   mock.Anything,
+			TopicId:        mock.Anything,
+		}).Once()
+
+		twitter.Mock.On("DirectMessage", mock.Anything, mock.Anything).Return(&twitter_http_request.DMSuccessResponse{}, &twitter_http_request.DMErrorResponse{}).Once()
+
+		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(nil).Once()
+
+		blastingLogRepo.Mock.On("Insert", mock.Anything).Return(nil).Once()
+
+		blastingSessionRepo.Mock.On("UpdateStatus", mock.Anything, mock.Anything).Return(nil).Once()
+
+		res := service.Blast(mock.Anything, tweets)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
 	})

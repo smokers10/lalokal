@@ -17,18 +17,16 @@ type blastingSessionService struct {
 	twitterAPITokenRepository twitter_api_token.Repository
 	keywordRepository         keyword.Repository
 	twitter                   twitter_http_request.Contract
-	selectedTweetRepository   selected_tweet.Repository
 }
 
 func BlastingSessionService(blr *blasting_log.Repository, bsr *blasting_session.Repository, tat *twitter_api_token.Repository,
-	kr *keyword.Repository, tw *twitter_http_request.Contract, str *selected_tweet.Repository) blasting_session.Service {
+	kr *keyword.Repository, tw *twitter_http_request.Contract) blasting_session.Service {
 	return &blastingSessionService{
 		blastingLogRepository:     *blr,
 		blastingSessionRepository: *bsr,
 		twitterAPITokenRepository: *tat,
 		keywordRepository:         *kr,
 		twitter:                   *tw,
-		selectedTweetRepository:   *str,
 	}
 }
 
@@ -180,10 +178,19 @@ func (s *blastingSessionService) Scrape(blasting_session_id string) (response *h
 	}
 }
 
-func (s *blastingSessionService) Blast(blasting_session_id string) (response *http_response.Response) {
+func (s *blastingSessionService) Blast(blasting_session_id string, tweets []selected_tweet.SelectedTweet) (response *http_response.Response) {
+	// check blasting session id
 	if blasting_session_id == "" {
 		return &http_response.Response{
 			Message: "id tidak boleh kosong",
+			Status:  400,
+		}
+	}
+
+	// check selected tweet, if no selected tweet then retrun error response 400
+	if len(tweets) == 0 {
+		return &http_response.Response{
+			Message: "tidak ada tuitan yang dipilih",
 			Status:  400,
 		}
 	}
@@ -209,26 +216,54 @@ func (s *blastingSessionService) Blast(blasting_session_id string) (response *ht
 
 	// retireve twitter token
 	twitter_token := s.twitterAPITokenRepository.FindOneByTopicId(blasting_session.TopicId)
-	if twitter_token.APIToken == "" {
+	if twitter_token.APIToken == "" || twitter_token.AccessSecret == "" || twitter_token.AccessToken == "" || twitter_token.ConsumerKey == "" || twitter_token.ConsumerSecret == "" {
 		return &http_response.Response{
-			Message: "api token twitter untuk topik tidak ada",
+			Message: "token twitter tidak boleh kosong",
 			Status:  404,
 		}
 	}
 
-	// retrieve selected tweets
-	selected_tweet := s.selectedTweetRepository.FindByBlastingSessionId(blasting_session_id)
+	// start BLASTING!!
+	for _, tweet := range tweets {
+		EO := twitter_http_request.EOMap{
+			"event": twitter_http_request.EOMap{
+				"type": "message_create",
+				"message_create": twitter_http_request.EOMap{
+					"target":       twitter_http_request.EOMap{"recipient_id": tweet.AuthorId},
+					"message_data": twitter_http_request.EOMap{"text": blasting_session.Message},
+				},
+			},
+		}
 
-	// if there is no selected tweets
-	if len(selected_tweet) == 0 {
-		return &http_response.Response{
-			Message: "tidak ada tuitan yang dipilih",
-			Status:  404,
+		_, DER := s.twitter.DirectMessage(*twitter_token, EO)
+		if DER != nil {
+			err := s.blastingLogRepository.Insert(&blasting_log.BlastingLogDomain{
+				Status:            "not sent",
+				BlastingSessionId: blasting_session_id,
+				TopicId:           blasting_session.TopicId,
+			})
+
+			if err != nil {
+				return &http_response.Response{
+					Message: "gagal menyimpan log",
+					Status:  500,
+				}
+			}
+		}
+
+		err := s.blastingLogRepository.Insert(&blasting_log.BlastingLogDomain{
+			Status:            "sent",
+			BlastingSessionId: blasting_session_id,
+			TopicId:           blasting_session.TopicId,
+		})
+
+		if err != nil {
+			return &http_response.Response{
+				Message: "gagal menyimpan log",
+				Status:  500,
+			}
 		}
 	}
-
-	// start BLASTING!!!
-	// blasting process
 
 	// update blasting session status
 	if err := s.blastingSessionRepository.UpdateStatus(blasting_session_id, "revoked"); err != nil {

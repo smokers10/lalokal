@@ -18,6 +18,12 @@
     <!-- Theme style -->
     <link rel="stylesheet" href="/admin-lte/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="/admin-lte/plugins/sweetalert2/sweetalert2.min.css">
+    <style>
+        .scroll {
+            height: 70vh;
+            overflow-y: scroll;
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -37,8 +43,9 @@
                         <div class="col-sm-6">
                             <div class="float-sm-right">
                                 <button class="btn btn-success mr-2" id="start-scraping"> Mulai Scraping </button>
-                                <button class="btn btn-primary mr-2" onclick="openEditMessageModal()"> Ubah Pesan </button>
-                                <button class="btn btn-primary mr-2"> Mulai Blasting </button>
+                                <button class="btn btn-primary mr-2" onclick="openEditMessageModal()"> Ubah Pesan
+                                </button>
+                                <button class="btn btn-primary mr-2" onclick="blast()"> Mulai Blasting </button>
                             </div>
                         </div>
                     </div><!-- /.row -->
@@ -54,7 +61,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h3>Tuitan</h3><br>
-                                    <div id="tweets-place">
+                                    <div id="tweets-place" class="scroll">
                                         <center>
                                             <h4 class="text-muted">Silahkan mulai scraping</h4>
                                         </center>
@@ -68,8 +75,8 @@
                                 <div class="card-body">
                                     <h3>Tuitan Terpilih</h3><br>
 
-                                    <div id="selected-tweets-place">
-                                    
+                                    <div id="selected-tweets-place" class="scroll">
+
                                     </div>
                                 </div>
                             </div>
@@ -144,8 +151,9 @@
     <!-- Page specific script -->
     <script src="/script/lib/alert.js"></script>
     <script>
+        var sbid = localStorage.getItem("selected-blasting-session")
+
         function getTopicDetail() {
-            var sbid = localStorage.getItem("selected-blasting-session")
             $.ajax({
                 url: `/user/topic/dashboard/blasting-session/detail/${sbid}`,
                 success: function (res) {
@@ -158,8 +166,7 @@
         function openEditMessageModal() {
             $("#sessionBlastingModal").modal("show")
             $("#sb-form").trigger("reset")
-            var sbid = localStorage.getItem("selected-blasting-session")
-            
+
             $.ajax({
                 url: `/user/topic/dashboard/blasting-session/detail/${sbid}`,
                 success: function (res) {
@@ -238,7 +245,7 @@
             if (type == "selected") btn = `<button class="btn btn-danger btn-sm" onclick='cancelSelectedTweet(${mdata})'>Batalkan Pemilihan</button>`
 
             return `
-                <div class="mt-2" id="tweet-${id}" data-author-id="">
+                <div class="mt-2" id="tweet-${id}" data-tweet='${mdata}'>
                     <div class="row mt-4">
                         <div class="col-sm-1">
                             <img src="${profile_image_url}" class="rounded-circle">
@@ -267,12 +274,12 @@
             $(`#tweet-${data.id}`).remove()
             $("#tweets-place").prepend(rendertweet(data, "selection"))
         }
-       
-        function scrape(){
+
+        function scrape() {
             var sbid = localStorage.getItem("selected-blasting-session")
             $.ajax({
                 url: `/user/topic/dashboard/blasting-session/scrape/${sbid}`,
-                beforeSend: function(){
+                beforeSend: function () {
                     $("#tweets-place").children().remove()
                     $("#tweets-place").append(` 
                         <center>
@@ -289,6 +296,31 @@
                     data.forEach(el => {
                         $("#tweets-place").append(rendertweet(el, "selection"))
                     })
+                }
+            })
+        }
+
+        function blast() {
+            var childs = $("#selected-tweets-place").children()
+            var selected = []
+            for (let i = 0; i < childs.length; i++) {
+                const el = childs[i]
+                var elid = $(el).attr("data-tweet")
+                selected.push(JSON.parse(elid))
+            }
+
+            var data = {
+                "blasting_session_id" : sbid,
+                "selected": selected
+            }
+
+            $.ajax({
+                url: `/user/topic/dashboard/blasting-session/blast`,
+                method: "post",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (res) {
+                    console.log(res)
                 }
             })
         }
@@ -313,7 +345,7 @@
                 sendRequest("/user/topic/dashboard/blasting-session/update", data)
             })
 
-            $("#start-scraping").click(function(e){
+            $("#start-scraping").click(function (e) {
                 scrape()
             })
         })

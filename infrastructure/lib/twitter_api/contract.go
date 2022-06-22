@@ -1,6 +1,9 @@
 package twitter_http_request
 
-import "time"
+import (
+	"lalokal/domain/twitter_api_token"
+	"time"
+)
 
 type EOMap map[string]interface{}
 
@@ -52,5 +55,5 @@ type UserDetail struct {
 type Contract interface {
 	Search(keyword string, token string) (scraped_tweet *RetrunValue, failure error)
 
-	DirectMessage(author_id string, message string, token string) (failure error)
+	DirectMessage(token twitter_api_token.TwitterAPIToken, event_object EOMap) (DSR *DMSuccessResponse, DER *DMErrorResponse)
 }

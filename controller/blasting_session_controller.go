@@ -2,6 +2,7 @@ package controller
 
 import (
 	"lalokal/domain/blasting_session"
+	"lalokal/domain/selected_tweet"
 	service "lalokal/service/blasting_session"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,7 +19,6 @@ func (mc *mainController) BlastingSessionController() blastingSessionController 
 		&mc.solvent.Repository.TwitterAPITokenRepository,
 		&mc.solvent.Repository.KeywordRepository,
 		&mc.solvent.TwitterHTTP,
-		&mc.solvent.Repository.SelectedTweetRepository,
 	)
 
 	return blastingSessionController{blastingSessionService: bss}
@@ -72,6 +72,19 @@ func (bss *blastingSessionController) Scrape(c *fiber.Ctx) error {
 	bssID := c.Params("blasting_session_id")
 
 	res := bss.blastingSessionService.Scrape(bssID)
+
+	return c.Status(res.Status).JSON(res)
+}
+
+func (bss *blastingSessionController) Blast(c *fiber.Ctx) error {
+	type data struct {
+		Selected           []selected_tweet.SelectedTweet `json:"selected"`
+		BlastringSessionId string                         `json:"blasting_session_id"`
+	}
+	body := data{}
+	c.BodyParser(&body)
+
+	res := bss.blastingSessionService.Blast(body.BlastringSessionId, body.Selected)
 
 	return c.Status(res.Status).JSON(res)
 }
