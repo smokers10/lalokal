@@ -20,3 +20,8 @@ func (m *MockRepository) Count(topic_id string) (count int) {
 	args := m.Mock.Called(topic_id)
 	return args.Int(0)
 }
+
+func (m *MockRepository) LogPercentage(blasting_session_id string) (total_message int, success_count int, failed_count int, success_percentage float32, fail_percentage float32) {
+	args := m.Mock.Called(blasting_session_id)
+	return args.Int(0), args.Int(1), args.Int(2), float32(args.Int(3)), float32(args.Int(4))
+}

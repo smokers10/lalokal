@@ -14,7 +14,6 @@ func CollectionBuilder(db *mongo.Database) {
 		"blasting_session",
 		"forgot_password",
 		"keyword",
-		"selected_tweet",
 		"topic",
 		"twitter_api_token",
 		"user",
@@ -42,14 +41,6 @@ func collectionIndexBuilder(db *mongo.Database, collection_name string) {
 	if collection_name == "forgot_password" || collection_name == "user_id" {
 		index := []mongo.IndexModel{
 			{Keys: bson.M{"user_id": 1}},
-		}
-
-		db.Collection(collection_name).Indexes().CreateMany(ctx, index)
-	}
-
-	if collection_name == "selected_tweet" {
-		index := []mongo.IndexModel{
-			{Keys: bson.M{"blasting_session_id": 1}},
 		}
 
 		db.Collection(collection_name).Indexes().CreateMany(ctx, index)

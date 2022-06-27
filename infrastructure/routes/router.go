@@ -56,6 +56,7 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	blastingSessionPath.Get("/get-count/:topic_id", blastingSessionController.GetAllCount)
 	blastingSessionPath.Get("/get-all/:topic_id", blastingSessionController.GetAll)
 	blastingSessionPath.Get("/detail/:blasting_session_id", blastingSessionController.GetDetail)
+	blastingSessionPath.Get("/monitoring/:blasting_session_id", blastingSessionController.Monitoring)
 	blastingSessionPath.Post("/store", blastingSessionController.Store)
 	blastingSessionPath.Post("/update", blastingSessionController.Update)
 	blastingSessionPath.Get("/scrape/:blasting_session_id", blastingSessionController.Scrape)

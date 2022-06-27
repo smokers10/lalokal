@@ -7,14 +7,17 @@ import (
 )
 
 type BlastingSession struct {
-	Id           string    `json:"id,omitempty" form:"id" bson:"_id"`
-	Title        string    `json:"title,omitempty" form:"title" bson:"title"`
-	Message      string    `json:"message,omitempty" form:"message" bson:"message"`
-	Status       string    `json:"status,omitempty" form:"status" bson:"status"`
-	CreatedAt    time.Time `json:"created_at,omitempty" form:"created_at" bson:"created_at"`
-	SuccessCount float32   `json:"success_count"`
-	FailedCount  float32   `json:"failed_count"`
-	TopicId      string    `json:"topic_id,omitempty" form:"topic_id" bson:"topic_id"`
+	Id                string    `json:"id,omitempty" form:"id" bson:"_id"`
+	Title             string    `json:"title,omitempty" form:"title" bson:"title"`
+	Message           string    `json:"message,omitempty" form:"message" bson:"message"`
+	Status            string    `json:"status,omitempty" form:"status" bson:"status"`
+	CreatedAt         time.Time `json:"created_at,omitempty" form:"created_at" bson:"created_at"`
+	SuccessCount      int       `json:"success_count"`
+	FailedCount       int       `json:"failed_count"`
+	TotalCount        int       `json:"total_count"`
+	SuccessPercentage float32   `json:"success_percentage"`
+	FailedPercentage  float32   `json:"failed_percentage"`
+	TopicId           string    `json:"topic_id,omitempty" form:"topic_id" bson:"topic_id"`
 }
 
 type Repository interface {
@@ -45,4 +48,6 @@ type Service interface {
 	Blast(blasting_session_id string, tweets []selected_tweet.SelectedTweet) (response *http_response.Response)
 
 	Count(topic_id string) (response *http_response.Response)
+
+	Monitoring(blasting_session_id string) (response *http_response.Response)
 }

@@ -88,3 +88,9 @@ func (bss *blastingSessionController) Blast(c *fiber.Ctx) error {
 
 	return c.Status(res.Status).JSON(res)
 }
+
+func (bss *blastingSessionController) Monitoring(c *fiber.Ctx) error {
+	res := bss.blastingSessionService.Monitoring(c.Params("blasting_session_id"))
+
+	return c.Status(res.Status).JSON(res)
+}

@@ -45,7 +45,8 @@
                                 <button class="btn btn-success mr-2" id="start-scraping"> Mulai Scraping </button>
                                 <button class="btn btn-primary mr-2" onclick="openEditMessageModal()"> Ubah Pesan
                                 </button>
-                                <button class="btn btn-primary mr-2" onclick="blast()"> Mulai Blasting </button>
+                                <button class="btn btn-primary mr-2" onclick="blast()" id="blasting-btn" disabled> Mulai
+                                    Blasting </button>
                             </div>
                         </div>
                     </div><!-- /.row -->
@@ -296,6 +297,7 @@
                     data.forEach(el => {
                         $("#tweets-place").append(rendertweet(el, "selection"))
                     })
+                    $("#blasting-btn").removeAttr('disabled')
                 }
             })
         }
@@ -310,7 +312,7 @@
             }
 
             var data = {
-                "blasting_session_id" : sbid,
+                "blasting_session_id": sbid,
                 "selected": selected
             }
 
@@ -320,7 +322,10 @@
                 contentType: "application/json",
                 data: JSON.stringify(data),
                 success: function (res) {
-                    console.log(res)
+                    var action = confirm("blasting selesai sesi sudah tidak valid! silahkan kembali kehalaman daftar sesi blasting")
+                    if (action) {
+                        location.replace("/user/topic/dashboard/blasting-session")
+                    }
                 }
             })
         }

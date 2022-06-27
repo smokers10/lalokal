@@ -307,6 +307,7 @@ func TestDetail(t *testing.T) {
 		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
 	})
 }
+
 func TestScrape(t *testing.T) {
 	t.Run("empty blasting session id", func(t *testing.T) {
 		expected := common_testing.Expectation{
@@ -711,5 +712,85 @@ func TestBlast(t *testing.T) {
 		res := service.Blast(mock.Anything, tweets)
 
 		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+	})
+}
+
+func TestCount(t *testing.T) {
+	t.Run("empty topic id", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "id topik tidak boleh kosong",
+			Status:  400,
+		}
+
+		res := service.Count("")
+
+		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+	})
+
+	t.Run("success to retrieve", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "perhitungan berhasil diambil",
+			Success: true,
+			Status:  200,
+		}
+
+		blastingSessionRepo.Mock.On("Count", mock.Anything).Return(10).Once()
+		keywordRepo.Mock.On("Cound", mock.Anything).Return(10).Once()
+		blastingLogRepo.Mock.On("Count", mock.Anything).Return(5).Once()
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{
+			Id: mock.Anything,
+		}).Once()
+
+		res := service.Count(mock.Anything)
+		data := res.Data.(map[string]interface{})
+
+		assert.Equal(t, true, data["is_token_set"])
+		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
+	})
+
+	t.Run("success to retrieve but empty twitter API key", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "perhitungan berhasil diambil",
+			Success: true,
+			Status:  200,
+		}
+
+		blastingSessionRepo.Mock.On("Count", mock.Anything).Return(10).Once()
+		keywordRepo.Mock.On("Cound", mock.Anything).Return(10).Once()
+		blastingLogRepo.Mock.On("Count", mock.Anything).Return(5).Once()
+		twitterApiTokenRepo.Mock.On("FindOneByTopicId", mock.Anything).Return(&twitter_api_token.TwitterAPIToken{}).Once()
+
+		res := service.Count(mock.Anything)
+		data := res.Data.(map[string]interface{})
+
+		assert.Equal(t, false, data["is_token_set"])
+		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
+	})
+}
+
+func TestMonitoring(t *testing.T) {
+	t.Run("empty blasting id", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "id tidak boleh kosong",
+			Status:  400,
+		}
+
+		res := service.Monitoring("")
+
+		common_testing.Assertion(t, expected, res, common_testing.DefaultOption)
+	})
+
+	t.Run("monitoring retrieved", func(t *testing.T) {
+		expected := common_testing.Expectation{
+			Message: "data monitoring berhasil diambil",
+			Success: true,
+			Status:  200,
+		}
+
+		blastingLogRepo.Mock.On("LogPercentage", mock.Anything).Return(10, 60, 40).Once()
+
+		res := service.Monitoring(mock.Anything)
+
+		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
 	})
 }

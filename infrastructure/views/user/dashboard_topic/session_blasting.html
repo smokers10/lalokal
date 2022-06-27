@@ -17,6 +17,14 @@
     <link rel="stylesheet" href="/admin-lte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="/admin-lte/dist/css/adminlte.min.css">
+    <style>
+        .btn-disabled,
+        .btn-disabled[disabled] {
+            opacity: .4;
+            cursor: default !important;
+            pointer-events: none;
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -119,6 +127,56 @@
         </div>
     </div>
 
+    <!-- log modal -->
+    <div class="modal fade" id="blastingLogModal" tabindex="-1" role="dialog" aria-labelledby="blastingLogModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="blastingLogModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Pesan Terkirim</h6>
+                                    <p class="card-text">
+                                        <center>
+                                            <h1><b id="success-count"></b></h1>
+                                            <h6>Pesan Terkirim</h6>
+                                        </center>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Pesan Terkirim</h6>
+                                    <p class="card-text">
+                                        <center>
+                                            <h1><b id="failed-count"></b></h1>
+                                            <h6>Pesan Gagal Terkirim</h6>
+                                        </center>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- REQUIRED SCRIPTS -->
     <!-- jQuery -->
     <script src="/admin-lte/plugins/jquery/jquery.min.js"></script>
@@ -163,6 +221,13 @@
                     }
                 })
             }
+        }
+
+        function openMonitoringModal(data) {
+            $("#blastingLogModal").modal("show")
+            $("#blastingLogModalLabel").text(`Log ${data.title}`)
+            $("#success-count").text(data.success_count)
+            $("#failed-count").text(data.failed_count)
         }
 
         function validation(data) {
@@ -235,9 +300,9 @@
             }, 1200)
         }
 
-        function redirectToControlPage(id) {
+        function redirectToControlPage(id, status) {
             localStorage.setItem("selected-blasting-session", id)
-            location.replace("/user/topic/dashboard/blasting-session/control")
+            status == "revoked" ? false : location.replace("/user/topic/dashboard/blasting-session/control")
         }
 
         $(function () {
@@ -256,12 +321,12 @@
                     { "data": "created_at" },
                     {
                         "data": function (data, type, row) {
-                            return `${data.success_count}%`
+                            return `${data.success_percentage}%`
                         }
                     },
                     {
                         "data": function (data, type, row) {
-                            return `${data.failed_count}%`
+                            return `${data.failed_percentage}%`
                         }
                     },
                     {
@@ -275,8 +340,8 @@
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item" href="#" data-id="${data.id}" onclick="openModal(this, 'update')">Edit</a>
-                                        <a class="dropdown-item" href="#">Buka Log Blasting</a>
-                                        <a class="dropdown-item" href="#" onclick="redirectToControlPage('${data.id}')">Buka Sesi Blasting</a>
+                                        <a class="dropdown-item" href="#" onclick='openMonitoringModal( ${JSON.stringify(data)} )' >Buka Log Blasting</a>
+                                        ${data.status == "revoked" ? `<a class="dropdown-item btn-disabled" href="#" disabled="disabled">Buka Sesi Blasting</a>` : `<a class="dropdown-item" href="#" onclick="redirectToControlPage('${data.id}', '${data.status}')" >Buka Sesi Blasting</a>`}
                                     </div>
                                 </div>
                             </center>

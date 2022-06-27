@@ -91,6 +91,16 @@ func (s *blastingSessionService) ReadAll(topic_id string) (response *http_respon
 	}
 
 	result := s.blastingSessionRepository.FindByTopicId(topic_id)
+	for i := 0; i < len(result); i++ {
+		total_count, success_count, failed_count, success_percentage, fail_percentage := s.blastingLogRepository.LogPercentage(result[i].Id)
+		result[i].FailedPercentage = fail_percentage
+		result[i].SuccessPercentage = success_percentage
+		result[i].FailedCount = failed_count
+		result[i].SuccessCount = success_count
+		result[i].TotalCount = total_count
+
+		fmt.Println(success_count, failed_count, success_percentage, fail_percentage)
+	}
 
 	return &http_response.Response{
 		Message: "sesi blasting berhasil diambil",
@@ -236,6 +246,7 @@ func (s *blastingSessionService) Blast(blasting_session_id string, tweets []sele
 		}
 
 		_, DER := s.twitter.DirectMessage(*twitter_token, EO)
+		fmt.Println(DER)
 		if DER != nil {
 			err := s.blastingLogRepository.Insert(&blasting_log.BlastingLogDomain{
 				Status:            "not sent",
@@ -281,6 +292,14 @@ func (s *blastingSessionService) Blast(blasting_session_id string, tweets []sele
 }
 
 func (s *blastingSessionService) Count(topic_id string) (response *http_response.Response) {
+	// check blasting session id
+	if topic_id == "" {
+		return &http_response.Response{
+			Message: "id topik tidak boleh kosong",
+			Status:  400,
+		}
+	}
+
 	BScount := s.blastingSessionRepository.Count(topic_id)
 	Kcount := s.keywordRepository.Cound(topic_id)
 	BSLCount := s.blastingLogRepository.Count(topic_id)
@@ -302,6 +321,30 @@ func (s *blastingSessionService) Count(topic_id string) (response *http_response
 			"keyword_count":              Kcount,
 			"blasting_session_log_count": BSLCount,
 			"is_token_set":               isTokenSet,
+		},
+	}
+}
+
+func (s *blastingSessionService) Monitoring(blasting_session_id string) (response *http_response.Response) {
+	// check blasting session id
+	if blasting_session_id == "" {
+		return &http_response.Response{
+			Message: "id tidak boleh kosong",
+			Status:  400,
+		}
+	}
+
+	total_message, success_count, failed_count, success_percentage, fail_percentage := s.blastingLogRepository.LogPercentage(blasting_session_id)
+	return &http_response.Response{
+		Message: "data monitoring berhasil diambil",
+		Success: true,
+		Status:  200,
+		Data: map[string]interface{}{
+			"total_message":      total_message,
+			"success_percentage": success_percentage,
+			"fail_percentage":    fail_percentage,
+			"success_count":      success_count,
+			"failed_count":       failed_count,
 		},
 	}
 }

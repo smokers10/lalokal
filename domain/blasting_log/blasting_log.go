@@ -14,5 +14,7 @@ type Repository interface {
 
 	FindByTopicId(topic_id string) (result []BlastingLogDomain)
 
+	LogPercentage(blasting_session_id string) (total_message int, success_count int, failed_count int, success_percentage float32, fail_percentage float32)
+
 	Count(topic_id string) (count int)
 }

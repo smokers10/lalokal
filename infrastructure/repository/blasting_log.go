@@ -72,3 +72,39 @@ func (r *blastingLogRepository) Count(topic_id string) (count int) {
 
 	return int(c)
 }
+
+func (r *blastingLogRepository) LogPercentage(blasting_session_id string) (total_message int, success_count int, failed_count int, success_percentage float32, fail_percentage float32) {
+	ctx, cancel := lib.InitializeContex()
+	defer cancel()
+
+	bsid, _ := primitive.ObjectIDFromHex(blasting_session_id)
+
+	tm, err := r.collection.CountDocuments(ctx, bson.M{"blasting_session_id": bsid})
+	if err != nil {
+		fmt.Println(err)
+		return 0, 0, 0, 0, 0
+
+	}
+
+	sc, err := r.collection.CountDocuments(ctx, bson.M{"blasting_session_id": bsid, "status": "sent"})
+	if err != nil {
+		fmt.Println(err)
+		return 0, 0, 0, 0, 0
+	}
+
+	fc, err := r.collection.CountDocuments(ctx, bson.M{"blasting_session_id": bsid, "status": "not sent"})
+	if err != nil {
+		fmt.Println(err)
+		return 0, 0, 0, 0, 0
+	}
+
+	if tm == 0 {
+		return int(tm), 0, 0, 0, 0
+	}
+
+	// count precentage
+	success := float32((sc / tm) * 100)
+	failed := float32((fc / tm) * 100)
+
+	return int(tm), int(sc), int(fc), success, failed
+}
