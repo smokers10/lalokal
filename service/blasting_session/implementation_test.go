@@ -267,6 +267,8 @@ func TestReadAll(t *testing.T) {
 
 		blastingSessionRepo.Mock.On("FindByTopicId", mock.Anything).Return(retrieved_dummy).Once()
 
+		blastingLogRepo.Mock.On("LogPercentage").Return(1, 1, 1, 1, 1).Once()
+
 		res := service.ReadAll(mock.Anything)
 
 		common_testing.Assertion(t, expected, res, &common_testing.Options{DataNotEmpty: true})
@@ -787,7 +789,7 @@ func TestMonitoring(t *testing.T) {
 			Status:  200,
 		}
 
-		blastingLogRepo.Mock.On("LogPercentage", mock.Anything).Return(10, 60, 40).Once()
+		blastingLogRepo.Mock.On("LogPercentage", mock.Anything).Return(10, 60, 40, 1, 1).Once()
 
 		res := service.Monitoring(mock.Anything)
 
