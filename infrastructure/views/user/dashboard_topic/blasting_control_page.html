@@ -146,6 +146,7 @@
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.print.min.js"></script>
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+    <script src="/admin-lte/plugins/moment/moment.min.js"></script>
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
     <link rel="stylesheet" href="/admin-lte/plugins/sweetalert2/sweetalert2.min.css">
@@ -254,7 +255,7 @@
 
                         <div class="col-sm-10">
                             <b>${name}</b> <b class="text-muted">@${username}</b><br>
-                            <small> ${created_at} </small>
+                            <small> ${moment(created_at).format('MMMM Do YYYY, h:mm:ss a')} </small>
                         </div>
                     </div>
                     <p>

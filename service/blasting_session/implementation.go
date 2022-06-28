@@ -98,8 +98,6 @@ func (s *blastingSessionService) ReadAll(topic_id string) (response *http_respon
 		result[i].FailedCount = failed_count
 		result[i].SuccessCount = success_count
 		result[i].TotalCount = total_count
-
-		fmt.Println(success_count, failed_count, success_percentage, fail_percentage)
 	}
 
 	return &http_response.Response{

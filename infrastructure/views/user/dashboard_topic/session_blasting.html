@@ -195,6 +195,7 @@
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.print.min.js"></script>
     <script src="/admin-lte/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+    <script src="/admin-lte/plugins/moment/moment.min.js"></script>
     <!-- AdminLTE App -->
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
     <script src="/script/lib/alert.js"></script>
@@ -305,6 +306,14 @@
             status == "revoked" ? false : location.replace("/user/topic/dashboard/blasting-session/control")
         }
 
+        function calculatePercentage(partial_number, total_number) {
+            if (partial_number == 0 || total_number == 0){
+                return 0
+            }
+
+            return (partial_number / total_number) * 100
+        }
+        
         $(function () {
             var table = $('#table-session').DataTable({
                 "paging": true,
@@ -318,15 +327,19 @@
                 "ajax": `/user/topic/dashboard/blasting-session/get-all/${localStorage.getItem("selected-topic")}`,
                 "columns": [
                     { "data": "title" },
-                    { "data": "created_at" },
                     {
                         "data": function (data, type, row) {
-                            return `${data.success_percentage}%`
+                            return moment(data.created_at).format('MMMM Do YYYY, h:mm:ss a')
                         }
                     },
                     {
                         "data": function (data, type, row) {
-                            return `${data.failed_percentage}%`
+                            return `${calculatePercentage(data.success_count, data.total_count)}%`
+                        }
+                    },
+                    {
+                        "data": function (data, type, row) {
+                            return `${calculatePercentage(data.failed_count, data.total_count)}%`
                         }
                     },
                     {
