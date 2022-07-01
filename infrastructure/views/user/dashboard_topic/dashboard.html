@@ -192,7 +192,7 @@
                 success: function (res) {
                     var data = res.data
                     data.is_token_set ? $("#api-key-indicator").text("Selesai") : $("#api-key-indicator").text("Belum Ada")
-                    data.is_token_set ? $("#api-key-indicator-icon").addClass("fa fa-check fa-3x") : $("#api-key-indicator-icon").text("fa fa-times fa-3x")
+                    data.is_token_set ? $("#api-key-indicator-icon").addClass("fa fa-check fa-3x") : $("#api-key-indicator-icon").addClass("fa fa-times fa-3x")
                     $("#keyword-count").text(data.keyword_count)
                     $("#blasting-session-count").text(data.blasting_session_count)
                     $("#blasting-session-log-count").text(data.blasting_session_log_count)

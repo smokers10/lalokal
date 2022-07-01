@@ -193,14 +193,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
             })
         }
 
-        function validation(data) {
-            const { title, description } = data
-
-            // remove text danger 
+        function eliminateWarning(params) {
             var el = document.getElementsByClassName("text-danger")
             for (let i = 0; i < el.length; i++) {
                 el[i].remove()
             }
+        }
+
+        function validation(data) {
+            const { title, description } = data
+
+            // remove text danger 
+            eliminateWarning()
 
             // append text danger if validation error
             if (title == "") {
@@ -232,6 +236,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
             $('#topic-modal').modal("show")
             $("#action").val(action)
             $("#topic-form").trigger("reset")
+            eliminateWarning()
+            var el = document.getElementsByClassName("alert")
+            for (let i = 0; i < el.length; i++) {
+                el[i].remove()
+            }
 
             if (action == "store") {
                 $("#modal-label").text("Buat Topik Baru")
@@ -312,7 +321,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     id: $("#topic-id").val()
                 }
 
-                validation(data)
+                if (validation(data)) {
+                    return null
+                }
 
                 if (action == "store") {
                     sendRequest("/user/topic/store", data, table)

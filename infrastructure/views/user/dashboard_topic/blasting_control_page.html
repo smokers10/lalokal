@@ -58,6 +58,9 @@
             <div class="content">
                 <div class="container-fluid">
                     <div class="row">
+                        <div class="col-12">
+                            <div id="alert-place"></div>
+                        </div>
                         <div class="col-6">
                             <div class="card">
                                 <div class="card-body">
@@ -299,6 +302,11 @@
                         $("#tweets-place").append(rendertweet(el, "selection"))
                     })
                     $("#blasting-btn").removeAttr('disabled')
+
+                },
+                error: function (request, status, error) {
+                    errObj = JSON.parse(request.responseText)
+                    setup_alert(errObj.message, "failed")
                 }
             })
         }
@@ -327,6 +335,10 @@
                     if (action) {
                         location.replace("/user/topic/dashboard/blasting-session")
                     }
+                },
+                error: function (request, status, error) {
+                    errObj = JSON.parse(request.responseText)
+                    setup_alert(errObj.message, "failed")
                 }
             })
         }

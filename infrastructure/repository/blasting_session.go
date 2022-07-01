@@ -76,6 +76,10 @@ func (r *blastingSessionRepository) FindByTopicId(topic_id string) (result []bla
 		return []blasting_session.BlastingSession{}
 	}
 
+	if len(result) == 0 {
+		return []blasting_session.BlastingSession{}
+	}
+
 	return result
 }
 

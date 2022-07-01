@@ -74,6 +74,10 @@ func (r *topicRepository) FindByUserId(user_id string) (result []topic.Topic) {
 		return []topic.Topic{}
 	}
 
+	if len(result) == 0 {
+		return []topic.Topic{}
+	}
+
 	return result
 }
 
