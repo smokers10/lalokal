@@ -77,6 +77,11 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	keywordPath.Post("/store", keywordController.Store)
 	keywordPath.Post("/delete", keywordController.Delete)
 
+	// forgot password
+	forgotPasswordPath := dashboardPath.Group("/forgot-password")
+	forgotPasswordController := mainController.ForgotPasswordController()
+	forgotPasswordPath.Get("/", forgotPasswordController.ForgotPasswordPage)
+
 	// test
 	testController := mainController.TestController()
 	testPath := app.Group("/user", userMiddleware)
