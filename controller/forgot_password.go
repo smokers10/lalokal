@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"lalokal/domain/user"
 	service "lalokal/service/user"
 
@@ -23,4 +24,25 @@ func (mc *mainController) ForgotPasswordController() forgotPasswordController {
 
 func (fpc *forgotPasswordController) ForgotPasswordPage(c *fiber.Ctx) error {
 	return c.Render("forgot-password/forgot-password", nil)
+}
+
+func (fpc *forgotPasswordController) ResetPasswordPage(c *fiber.Ctx) error {
+	return c.Render("forgot-password/reset-password", nil)
+}
+
+func (fpc *forgotPasswordController) ForgotPasswordRequest(c *fiber.Ctx) error {
+	res := fpc.userService.ForgotPassword(c.FormValue("email"))
+
+	return c.Status(res.Status).JSON(res)
+}
+
+func (fpc *forgotPasswordController) ResetPasswordRequest(c *fiber.Ctx) error {
+	body := &user.ResetPasswordData{}
+	c.BodyParser(body)
+
+	fmt.Println(body.Secret)
+
+	res := fpc.userService.ResetPassword(body)
+
+	return c.Status(res.Status).JSON(res)
 }

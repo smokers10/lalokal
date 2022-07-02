@@ -44,7 +44,9 @@ func (r *userRepository) UpdatePassword(data *user.ResetPasswordData) (failure e
 
 	_id, _ := primitive.ObjectIDFromHex(data.UserId)
 	document := bson.M{
-		"password": data.Password,
+		"$set": bson.M{
+			"password": data.Password,
+		},
 	}
 
 	if err := r.collection.FindOneAndUpdate(ctx, bson.M{"_id": _id}, document).Err(); err != nil {

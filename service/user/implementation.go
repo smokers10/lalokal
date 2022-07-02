@@ -66,6 +66,7 @@ func (s *userService) ForgotPassword(email string) (response *http_response.Resp
 		UserId: user.Id,
 		Secret: hashed_otp,
 	}); err != nil {
+		fmt.Println(err)
 		return &http_response.Response{
 			Message: "kesalahan saat menyimpan data atur ulang password",
 			Status:  500,
@@ -74,7 +75,7 @@ func (s *userService) ForgotPassword(email string) (response *http_response.Resp
 
 	// make link
 	configuration := configuration.ReadConfiguration().Application
-	link := fmt.Sprintf("%s/%s", configuration.BaseURL, token)
+	link := fmt.Sprintf("%s/reset-password/%s", configuration.BaseURL, token)
 
 	// send forgot password email
 	if err := s.smtp.Send([]string{user.Email}, "Atur Ulang Password Lalokal", helper.ForgotPasswordEmailTemplate(user.Name, otp, link)); err != nil {
@@ -242,7 +243,7 @@ func (s *userService) ResetPassword(input *user.ResetPasswordData) (response *ht
 	}
 
 	// compare secret code
-	if !s.bcrypt.Compare(input.Secret, forgotPW.Secret) {
+	if !s.bcrypt.Compare(forgotPW.Secret, input.Secret) {
 		return &http_response.Response{
 			Message: "kode reset password salah",
 			Status:  401,
@@ -251,8 +252,10 @@ func (s *userService) ResetPassword(input *user.ResetPasswordData) (response *ht
 
 	// update password
 	input.Password = s.bcrypt.Hash(input.Password)
+	input.UserId = forgotPW.UserId
 
 	if err := s.userRepository.UpdatePassword(input); err != nil {
+		fmt.Println(err)
 		return &http_response.Response{
 			Message: "kesalahan saat mengatur ulang",
 			Status:  500,

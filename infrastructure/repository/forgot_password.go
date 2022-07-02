@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type forgotPasswordRepository struct {
@@ -32,7 +33,7 @@ func (r *forgotPasswordRepository) Insert(data *forgot_password.ForgotPassword) 
 		},
 	}
 
-	if _, err := r.collection.UpdateOne(ctx, bson.M{"user_id": user_id}, document); err != nil {
+	if _, err := r.collection.UpdateOne(ctx, bson.M{"user_id": user_id}, document, options.Update().SetUpsert(true)); err != nil {
 		return err
 	}
 

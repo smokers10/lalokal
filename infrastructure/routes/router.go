@@ -22,6 +22,13 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	app.Post("/login/submission", guestMiddleware, authController.LoginSubmission)
 	app.Get("/logout", userMiddleware, authController.Logout)
 
+	// forgot password
+	forgotPasswordController := mainController.ForgotPasswordController()
+	app.Get("/forgot-password", forgotPasswordController.ForgotPasswordPage)
+	app.Get("/reset-password/:token", forgotPasswordController.ResetPasswordPage)
+	app.Post("/forgot-password", forgotPasswordController.ForgotPasswordRequest)
+	app.Post("/reset-password", forgotPasswordController.ResetPasswordRequest)
+
 	// register
 	registrationController := mainController.RegistrationController()
 	registrationPath := app.Group("/registration")
@@ -76,11 +83,6 @@ func Router(app *fiber.App, solvent *injector.InjectorSolvent) {
 	keywordPath.Get("/get/:id", keywordController.GetAll)
 	keywordPath.Post("/store", keywordController.Store)
 	keywordPath.Post("/delete", keywordController.Delete)
-
-	// forgot password
-	forgotPasswordPath := dashboardPath.Group("/forgot-password")
-	forgotPasswordController := mainController.ForgotPasswordController()
-	forgotPasswordPath.Get("/", forgotPasswordController.ForgotPasswordPage)
 
 	// test
 	testController := mainController.TestController()
